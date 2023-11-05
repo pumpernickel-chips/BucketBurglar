@@ -45,7 +45,7 @@ public class PlayerJ {
     public void moveToRoom(Room newRoom) {
         if (newRoom != null) {
             currentRoom = newRoom;
-            System.out.println(name + " has moved to " + newRoom.getName());
+            //System.out.println(name + " has moved to " + newRoom.getName());
         } else {
             System.out.println("Invalid room. Cannot move.");
         }
@@ -74,8 +74,8 @@ public class PlayerJ {
     // Method to collect loot from the current room
     public void collectLoot() {
         if (currentRoom != null) {
-            int loot = currentRoom.collectLoot();
-            System.out.println(name + " collects " + loot + " loot from " + currentRoom.getName());
+            //int loot = currentRoom.collectLoot();
+            //System.out.println(name + " collects " + loot + " loot from " + currentRoom.getName());
             // You can add more logic for handling loot collection
         }
     }
