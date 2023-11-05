@@ -1,3 +1,8 @@
+// John's separate branch of Player class preserved as 'PlayerJ' for its methods and attributes to incorporate into main Player class
+
+/**
+ * @author John Beaudry
+ */
 public class PlayerJ {
     private String name;
     private int health;
@@ -5,7 +10,7 @@ public class PlayerJ {
     //private int defense;
     private Room currentRoom;
 
-    public PlayerJ(String name, int health, int attackPower, int defense) {
+    public PlayerJ(String name, int health) {
         this.name = name;
         this.health = health;
         //this.attackPower = attackPower;

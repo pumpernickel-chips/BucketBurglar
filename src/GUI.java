@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
-
+/**
+ * @author Naomi Coakley
+ */
 public class GUI extends JPanel {
     JFrame frame;
     /**
@@ -11,6 +13,7 @@ public class GUI extends JPanel {
     }
     /**
      * Complete constructor
+     * @param name name of the window
      * */
     public GUI(String name){
         super(new GridBagLayout(), true);

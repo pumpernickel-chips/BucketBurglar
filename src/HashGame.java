@@ -1,5 +1,7 @@
 import java.awt.geom.Point2D;
-
+/**
+ * @author Naomi Coakley
+ */
 public class HashGame {
     public HashGame(){
 
