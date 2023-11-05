@@ -6,7 +6,7 @@ import java.util.Deque;
  * @author John Beaudry
  * @author Naomi Coakley
  */
-public class Player {
+public class Player implements GameEntity{
     private int currentScore;
     private String name;
     private int health;
@@ -36,13 +36,19 @@ public class Player {
             //method body tbd
         }
     }
-
     public void collectLoot() {
         if (currentRoom != null) {
             //method body tbd
         }
     }
-
-
+    @Override
+    public void store() {
+    }
+    @Override
+    public void retrieve() {
+    }
+    @Override
+    public void remove() {
+    }
 }
 
