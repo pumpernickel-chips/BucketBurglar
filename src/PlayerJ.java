@@ -1,4 +1,3 @@
-package src;
 public class PlayerJ {
     private String name;
     private int health;
@@ -26,13 +25,13 @@ public class PlayerJ {
         this.health = health;
     }
 
-    public int getAttackPower() {
+/*    public int getAttackPower() {
         return attackPower;
     }
 
     public int getDefense() {
         return defense;
-    }
+    }*/
 
     public Room getCurrentRoom() {
         return currentRoom;
@@ -52,7 +51,7 @@ public class PlayerJ {
         }
     }
 
-    // Method to attack another player
+    /*// Method to attack another player (Naomi - likely unused)
     public void attack(PlayerJ target) {
         int damage = attackPower - target.getDefense();
         if (damage > 0) {
@@ -61,7 +60,7 @@ public class PlayerJ {
         } else {
             System.out.println(name + " attacks " + target.getName() + " but it has no effect.");
         }
-    }
+    }*/
 
     // Method to take damage and update health
     public void takeDamage(int damage) {
