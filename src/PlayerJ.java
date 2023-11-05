@@ -1,15 +1,15 @@
 public class PlayerJ {
     private String name;
     private int health;
-    private int attackPower;
-    private int defense;
+    //private int attackPower;
+    //private int defense;
     private Room currentRoom;
 
     public PlayerJ(String name, int health, int attackPower, int defense) {
         this.name = name;
         this.health = health;
-        this.attackPower = attackPower;
-        this.defense = defense;
+        //this.attackPower = attackPower;
+        //this.defense = defense;
     }
 
     // Getters and setters for attributes
@@ -41,7 +41,8 @@ public class PlayerJ {
         this.currentRoom = room;
     }
 
-    // Method to move the player to another room
+    // Method to move the player to another room (Naomi - mostly redundant due to method in HashGame)
+    /*
     public void moveToRoom(Room newRoom) {
         if (newRoom != null) {
             currentRoom = newRoom;
@@ -50,6 +51,7 @@ public class PlayerJ {
             System.out.println("Invalid room. Cannot move.");
         }
     }
+    */
 
     /*// Method to attack another player (Naomi - likely unused)
     public void attack(PlayerJ target) {
