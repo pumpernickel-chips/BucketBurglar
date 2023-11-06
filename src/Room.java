@@ -5,13 +5,15 @@ import java.awt.geom.Point2D;
 
 /**
  * @author Yuliia Synytska
- * TODO: take note of the new Point2D in the attributes.
- *      Notice that the parameters are now two sets of x and y values to define the Dimension and Point2D.
- *      Using this info, write the generateLoot() method to create Treasure objects (see class) in a forloop using
- *      randomized x and y parameters that use the roomSize and origin to only place them inside the bounds of the Room.
- *      TIP:
- *      You can choose to make these values relative to the whole window or just the room itself (treating the top-left
- *      corner of the room as point 0x0). There will be a method in HashGame to test this out in the GUI soon.
+ * TODO: Yuliia - take note of the new Point2D in the attributes.
+ *       Notice that the parameters are now two sets of x and y values to define the Dimension and Point2D.
+ *       Using this info, write the generateLoot() method to create Treasure objects (see class) in a forloop using
+ *       randomized x and y parameters that use the roomSize and origin to only place them inside the bounds of the Room.
+ *       TIP:
+ *       You can choose to make these values relative to the whole window or just the room itself (treating the top-left
+ *       corner of the room as point 0x0). There will be a method in HashGame to test this out in the GUI soon.
+ *
+ * TODO: (low priority) convert line comments to formatted JavaDoc comments
  */
 public class Room implements GameEntity{
     private Dimension roomSize;
