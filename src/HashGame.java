@@ -4,13 +4,15 @@ import java.awt.geom.Point2D;
  */
 public class HashGame {
     public HashGame(){
-
+        GUI g = new GUI();
+        EntityTable ents = new EntityTable();
+        GameMap map = new GameMap(ents);
     }
     public static void main(String[] args){
-        GUI g = new GUI("Tester Game");
+        HashGame test = new HashGame();
     }
     public void createPlayers(){}
-    public void movePlayer(Point2D position){}
+    public void movePlayer(int posX, int posY){}
 
     public void initializeMap(){}
 }
