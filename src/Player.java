@@ -36,6 +36,10 @@ public class Player implements GameEntity{
     public void joinGame(){}
     //method for the player to leave the game anytime
     public void leaveGame(){}
+    //method to get name of player
+    public String getName(){
+        return name;
+    }
     /**
      * method for the player to decide a path to move in/around the castle/rooms
      */
