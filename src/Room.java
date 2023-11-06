@@ -2,6 +2,7 @@
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 /**
  * @author Yuliia Synytska
@@ -46,5 +47,17 @@ public class Room implements GameEntity{
     }
     @Override
     public void remove() {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Room)) return false;
+        Room room = (Room) o;
+        return isEmpty == room.isEmpty && Objects.equals(roomSize, room.roomSize) && Objects.equals(origin, room.origin);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(roomSize, isEmpty, origin);
     }
 }

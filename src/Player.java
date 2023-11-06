@@ -20,12 +20,12 @@ public class Player implements GameEntity{
     private int currentScore;
     private String name;
     private int health;
-    private Deque<String> roomKeys;
+    private Deque<Integer> roomKeys;
     private Room currentRoom;
     //default constructor method
     public Player(){}
     //constructor method to set values for class attributes
-    public Player(String name, int health, Deque<String> roomKeys) {
+    public Player(String name, int health, Deque<Integer> roomKeys) {
         this.currentScore = 0;// make final? maybe?
         this.name = name;
         this.health = health;
@@ -39,7 +39,9 @@ public class Player implements GameEntity{
     /**
      * method for the player to decide a path to move in/around the castle/rooms
      */
-    public void decidePath(){}
+    public void decidePath(EntityTable entities, int numKeys){
+
+    }
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
