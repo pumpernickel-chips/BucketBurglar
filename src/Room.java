@@ -62,7 +62,7 @@ public class    Room implements GameEntity{
     }
 
     /**
-     * method to return payers in a room
+     * method to return players in a room
     */
     public ArrayList<Player> getPlayers(){
         return players;
