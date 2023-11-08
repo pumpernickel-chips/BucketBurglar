@@ -33,7 +33,7 @@ public class Player implements GameEntity{
         this.roomKeys = roomKeys;
         this.currentRoom = null;
     }
-    //method for a player than player can use to join the multi player game
+    //method for a player than player can use to join the multiplayer game
     public void joinGame(){}
     //method for the player to leave the game anytime
     public void leaveGame(){}
