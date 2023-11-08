@@ -66,6 +66,43 @@ public class Player implements GameEntity{
             //method body tbd
         }
     }
+
+    public int getCurrentScore() {
+        return currentScore;
+    }
+
+    public void setCurrentScore(int currentScore) {
+        this.currentScore = currentScore;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public Deque<Integer> getRoomKeys() {
+        return roomKeys;
+    }
+
+    public void setRoomKeys(Deque<Integer> roomKeys) {
+        this.roomKeys = roomKeys;
+    }
+
+    public Room getCurrentRoom() {
+        return currentRoom;
+    }
+
+    public void setCurrentRoom(Room currentRoom) {
+        this.currentRoom = currentRoom;
+    }
+
     @Override
     public void store() {
     }
