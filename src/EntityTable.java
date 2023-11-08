@@ -1,6 +1,8 @@
+
+
 import java.util.HashMap;
 
-public class EntityTable extends HashMap<String, GameEntity>{
+public class EntityTable extends HashMap<Integer, GameEntity>{
     private boolean gameStarted;
     public EntityTable(){
         this(false);
