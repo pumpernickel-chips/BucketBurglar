@@ -1,3 +1,5 @@
+
+
 public interface GameEntity {
     void store();
     void retrieve();

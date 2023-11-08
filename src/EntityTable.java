@@ -1,3 +1,5 @@
+
+
 import java.util.HashMap;
 
 public class EntityTable extends HashMap<Integer, GameEntity>{
