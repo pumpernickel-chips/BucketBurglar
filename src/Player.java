@@ -1,6 +1,7 @@
 
 
-import java.util.Deque;
+import java.util.*;
+
 /**
  * @author Yuliia Synytska
  * @author John Beaudry
@@ -39,8 +40,16 @@ public class Player implements GameEntity{
     /**
      * method for the player to decide a path to move in/around the castle/rooms
      */
-    public void decidePath(EntityTable entities, int numKeys){
-
+    public void decidePath(int numberOfRooms, EntityTable allRooms){
+        List<Integer> keysAsArray = new ArrayList<>(allRooms.keySet());
+        Collections.shuffle(keysAsArray);
+        roomKeys = new ArrayDeque<>();
+        for (int i = 0; i < Math.min(numberOfRooms, keysAsArray.size()); i++) {
+            roomKeys.add(keysAsArray.get(i));
+        }
+    }
+    public Integer getNextRoom() {
+        return roomKeys.poll();
     }
     public void takeDamage(int damage) {
         health -= damage;
