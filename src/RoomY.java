@@ -13,13 +13,13 @@ public class RoomY {
     private ArrayList<Player> players;
 
     //default method for Room
-    public Room() {
+    public RoomY() {
         isEmpty = false;
         players = new ArrayList<>();
     }
 
     //parameterized method to set class attributes for Room
-    public Room(Dimension dimension, boolean isEmpty) {
+    public RoomY(Dimension dimension, boolean isEmpty) {
         this.dimension = dimension;
         this.isEmpty = isEmpty;
         players = new ArrayList<>();
