@@ -5,8 +5,6 @@ import java.util.Random;
 
 public class EntityTable extends HashMap<Integer, GameEntity>{
     private boolean gameStarted;
-    private int roomCount;
-    private int playerCount;
     private HashMap<Integer, Integer> treasureMap;
     private int roomCount, playerCount, treasureCount, baseTrapCount, levelTrapCount;
     public EntityTable(){

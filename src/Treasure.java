@@ -12,6 +12,12 @@ public class Treasure implements GameEntity{
         this.boobyTrapped = false;
         this.lootBox = new Rectangle2D.Double(posX, posY, 10, 10);
     }
+    public boolean isBoobyTrapped() {
+        return boobyTrapped;
+    }
+    public void setBoobyTrapped(boolean boobyTrapped) {
+        this.boobyTrapped = boobyTrapped;
+    }
     @Override
     public void store() {
     }

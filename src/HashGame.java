@@ -21,7 +21,7 @@ public class HashGame {
     }
     public static void main(String[] args){
         HashGame test = new HashGame();
-    }
+    };
     public void setPaths() {
         while(iterEnt.hasNext()){
             GameEntity p = iterEnt.next().getValue();
