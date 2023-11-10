@@ -22,7 +22,7 @@ public class HashGame {
     public static void main(String[] args){
         HashGame test = new HashGame();
     }
-    private void setPaths() {
+    public void setPaths() {
         while(iterEnt.hasNext()){
             GameEntity p = iterEnt.next().getValue();
             if(p instanceof Player){
@@ -41,9 +41,7 @@ public class HashGame {
         }
     }
     public void createPlayers(){}
-    public void movePlayer(int posX, int posY, int direction){
-
-    }
+    public void movePlayer(int posX, int posY, int direction){}
 
     public void initializeMap(){}
 }
