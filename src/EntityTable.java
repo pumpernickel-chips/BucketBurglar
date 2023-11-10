@@ -4,14 +4,14 @@ import java.util.HashMap;
 
 public class EntityTable extends HashMap<Integer, GameEntity>{
     private boolean gameStarted;
-    private int roomCount;
-    private int playerCount;
+    private int roomCount, playerCount, treasureCount, baseTrapCount, levelTrapCount;
     public EntityTable(){
-        this(false);
+        this(false, 5);
     }
-    public EntityTable(boolean gameStarted){
+    public EntityTable(boolean gameStarted, int baseTrapCount){
         super();
         this.gameStarted = gameStarted;
+        this.baseTrapCount = baseTrapCount;
     }
     public boolean isGameStarted() {
         return gameStarted;
@@ -32,6 +32,31 @@ public class EntityTable extends HashMap<Integer, GameEntity>{
 
     public void setPlayerCount(int playerCount) {
         this.playerCount = playerCount;
+        if(!isGameStarted()){
+            setLevelTrapCount(baseTrapCount + ((baseTrapCount-2)*(playerCount-1)));
+        }
+    }
+    public int getTreasureCount() {
+        return treasureCount;
+    }
+    public void setTreasureCount(int treasureCount) {
+        this.treasureCount = treasureCount;
+    }
+
+    public int getBaseTrapCount() {
+        return baseTrapCount;
+    }
+
+    public void setBaseTrapCount(int baseTrapCount) {
+        this.baseTrapCount = baseTrapCount;
+    }
+
+    public int getLevelTrapCount() {
+        return levelTrapCount;
+    }
+
+    public void setLevelTrapCount(int levelTrapCount) {
+        this.levelTrapCount = levelTrapCount;
     }
 
     @Override
