@@ -1,4 +1,3 @@
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -9,7 +8,7 @@ public class HashGame {
     public HashGame(){
         GUI g = new GUI();
         EntityTable ents = new EntityTable();
-        GameMap map = new GameMap(ents);
+        FloorPlan map = new FloorPlan(ents);
         Iterator<Map.Entry<Integer, GameEntity>> itEnt = ents.entrySet().iterator();
         while(itEnt.hasNext()){
             GameEntity p = itEnt.next().getValue();

@@ -20,4 +20,3 @@ public class Treasure implements GameEntity{
     public void remove() {
     }
 }
-
