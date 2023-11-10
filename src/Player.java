@@ -23,6 +23,7 @@ public class Player implements GameEntity{
     private int health;
     private Deque<Integer> roomKeys;
     private Room currentRoom;
+    private boolean lost;
     //default constructor method
     public Player(){}
     //constructor method to set values for class attributes
@@ -32,6 +33,7 @@ public class Player implements GameEntity{
         this.health = health;
         this.roomKeys = roomKeys;
         this.currentRoom = null;
+        this.lost = false;
     }
     //method for a player than player can use to join the multiplayer game
     public void joinGame(){}
@@ -55,11 +57,12 @@ public class Player implements GameEntity{
     public Integer getNextRoom() {
         return roomKeys.poll();
     }
-    public void takeDamage(int damage) {
+    public boolean takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            //method body tbd
+            lost = true;
         }
+        return lost;
     }
     public void collectLoot() {
         if (currentRoom != null) {

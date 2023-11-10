@@ -1,9 +1,13 @@
 
 
 import java.util.HashMap;
+import java.util.Random;
 
 public class EntityTable extends HashMap<Integer, GameEntity>{
     private boolean gameStarted;
+    private int roomCount;
+    private int playerCount;
+    private HashMap<Integer, Integer> treasureMap;
     private int roomCount, playerCount, treasureCount, baseTrapCount, levelTrapCount;
     public EntityTable(){
         this(false, 5);
@@ -12,6 +16,39 @@ public class EntityTable extends HashMap<Integer, GameEntity>{
         super();
         this.gameStarted = gameStarted;
         this.baseTrapCount = baseTrapCount;
+        this.treasureMap = generateTreasureMap();
+    }
+    public HashMap<Integer, Integer> generateTreasureMap(){
+        HashMap<Integer, Integer> map = new HashMap<>();
+        int rooms = 20;
+        int random = 0;
+        Random r = new Random();
+        for (int i = 0; i < rooms; i++){
+            random = r.nextInt(5-0) + 0;
+            map.put(i, random);
+        }
+        return map;
+    }
+    public HashMap<Integer, Boolean> generateBoobyTrapsMap(){
+        HashMap<Integer, Boolean> map = new HashMap<>();
+        int rooms = 20;
+        int random = 0;
+        boolean boobyTrapped = false;
+        Random r = new Random();
+        for (int i = 0; i < rooms; i++){
+            random = r.nextInt(1 - 0) + 0;
+            if (random == 0) {
+                boobyTrapped = false;
+            } else {
+                boobyTrapped = true;
+            }
+            map.put(i, boobyTrapped);
+        }
+        return map;
+    }
+    public int getTreasureValue(int room){
+        int val = treasureMap.get(room);
+        return val;
     }
     public boolean isGameStarted() {
         return gameStarted;

@@ -76,6 +76,7 @@ public class    Room implements GameEntity{
         int y = (int) ((Math.random() * (roomSize.height - origin.getY())) + origin.getY());
         loot = new Treasure(x, y);
     }
+    
     @Override
     public void store() {
     }
