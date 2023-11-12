@@ -68,8 +68,6 @@ public class HashGame implements ActionListener {
 
         this.level = new FloorPlan(entities.getPlayerCount() + 3, entities);
         level.buildLevel();
-        level.arrangeRooms();
-        level.arrangeHallways();
         trapTreasures();
         setPaths();
     }
