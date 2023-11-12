@@ -4,13 +4,9 @@ import java.util.*;
 import java.util.List;
 
 /**
- *
- *
  * @author Yuliia Synytska
  * @author John Beaudry
  * @author Naomi Coakley
- *
- *
  */
 public class Player implements GameEntity{
     private int currentScore;
@@ -34,15 +30,15 @@ public class Player implements GameEntity{
      * Default zero-args constructor, passes default player name, health, and an empty ArrayDeque
      * */
     public Player() {
-        this("Player1", 3,0,0);
+        this("Player1", 3);
     }
     /**
      * Complete constructor
      * @param name player name
      * @param health player health
      */
-    public Player(String name, int health, int posX, int posY) {
-        this.playerSprite = new Rectangle2D.Double(posX, posY, 10, 10);
+    public Player(String name, int health) {
+        this.playerSprite = new Rectangle2D.Double(0, 0, 10, 10);
         this.playerColor = new Color(142,140,140);
         this.currentScore = 0;// make final? maybe?
         this.name = name;
@@ -51,17 +47,14 @@ public class Player implements GameEntity{
         this.currentRoom = null;
         this.lost = false;
     }
-
     /**
      * Method for player to join game
      */
     public void joinGame(){}
-
     /**
      * Method for player tp leave game at any time
      */
     public void leaveGame(){}
-
     /**
      * Method to get name of Player
      * @return name
@@ -80,7 +73,6 @@ public class Player implements GameEntity{
             roomKeys.add(keysAsArray.get(i));
         }
     }
-
     /**
      * Method to get next room from roomKeys {@code Deque<Integer>}
      * @return {@code roomKeys.poll}
@@ -88,7 +80,6 @@ public class Player implements GameEntity{
     public Integer getNextRoom() {
         return roomKeys.poll();
     }
-
     /**
      * Method to assess damage to player based on value passed to {@code damage}
      * @param damage damage to be assessed
@@ -101,7 +92,6 @@ public class Player implements GameEntity{
         }
         return lost;
     }
-
     /**
      * Method to collect loot from {@link Room}
      */
@@ -110,7 +100,6 @@ public class Player implements GameEntity{
             //method body tbd
         }
     }
-
     /**
      * Returns this players current score
      * @return currentScore current score
@@ -118,7 +107,6 @@ public class Player implements GameEntity{
     public int getCurrentScore() {
         return currentScore;
     }
-
     /**
      * Method to set current score
      * @param currentScore current score
@@ -126,7 +114,6 @@ public class Player implements GameEntity{
     public void setCurrentScore(int currentScore) {
         this.currentScore = currentScore;
     }
-
     /**
      * Method to set name of player
      * @param name player name
@@ -134,7 +121,6 @@ public class Player implements GameEntity{
     public void setName(String name) {
         this.name = name;
     }
-
     /**
      * Method returns remaining health of player
      * @return health remaining health
@@ -142,7 +128,6 @@ public class Player implements GameEntity{
     public int getHealth() {
         return health;
     }
-
     /**
      * Method to set players health
      * @param health remaining health
@@ -150,7 +135,6 @@ public class Player implements GameEntity{
     public void setHealth(int health) {
         this.health = health;
     }
-
     /**
      * Method returns {@code Deque} roomKeys containing the rooms
      * @return roomKeys
@@ -158,7 +142,6 @@ public class Player implements GameEntity{
     public Deque<Integer> getRoomKeys() {
         return roomKeys;
     }
-
     /**
      * Method to set {@code Deque} roomKeys
      * @param roomKeys {@code Deque} roomKeys
@@ -166,7 +149,6 @@ public class Player implements GameEntity{
     public void setRoomKeys(Deque<Integer> roomKeys) {
         this.roomKeys = roomKeys;
     }
-
     /**
      * Method to get room player in currently
      * @return currentRoom
@@ -174,7 +156,6 @@ public class Player implements GameEntity{
     public Room getCurrentRoom() {
         return currentRoom;
     }
-
     /**
      * Method to set room player in currently
      * @param currentRoom current room
@@ -182,7 +163,6 @@ public class Player implements GameEntity{
     public void setCurrentRoom(Room currentRoom) {
         this.currentRoom = currentRoom;
     }
-
     /**
      * Returns player sprite color
      * @return {@code playerColor}
@@ -190,7 +170,6 @@ public class Player implements GameEntity{
     public Color getPlayerColor(){
         return playerColor;
     }
-
     /**
      * Set player sprite color
      * @param c {@code Color}
@@ -198,7 +177,6 @@ public class Player implements GameEntity{
     public void setPlayerColor(Color c){
         playerColor = c;
     }
-
     /**
      * Returns player sprite
      * @return playerSprite
@@ -206,7 +184,6 @@ public class Player implements GameEntity{
     public Rectangle2D getPlayerSprite() {
         return playerSprite;
     }
-
     /**
      * Sets {@code playerSprite}
      * @param playerSprite
@@ -214,7 +191,6 @@ public class Player implements GameEntity{
     public void setPlayerSprite(Rectangle2D playerSprite) {
         this.playerSprite = playerSprite;
     }
-
     /**
      * Returns if player is still in game
      * @return lost
@@ -222,7 +198,6 @@ public class Player implements GameEntity{
     public boolean isLost() {
         return lost;
     }
-
     /**
      * Sets whether player is still in game
      * @param lost {@code boolean}
@@ -230,7 +205,6 @@ public class Player implements GameEntity{
     public void setLost(boolean lost) {
         this.lost = lost;
     }
-
     @Override
     public void store() {
     }

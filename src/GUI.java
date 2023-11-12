@@ -6,6 +6,7 @@ import java.util.List;
  * @author Naomi Coakley
  */
 public class GUI extends JFrame{
+    public static Dimension screenSize;
     private String name;
     private boolean[] playerJoined;
     private int h, w;
@@ -30,19 +31,20 @@ public class GUI extends JFrame{
         this.name = title;
         this.w = width;
         this.h = height;
+        screenSize = new Dimension(w, h);
     }
     public void initializeGUI(){
         title = showTitleBanner();
         select = showPlayerSelection();
         menu = showMenuBar();
 
-        this.setPreferredSize(new Dimension(w, h));
-        this.setMinimumSize(new Dimension(w, h));
+        //this.setPreferredSize(new Dimension(w, h));
+        //this.setMinimumSize(new Dimension(w, h));
         this.setBackground(intelliJGray);
 
         main = new JPanel(new GridBagLayout(), true);
-        main.setPreferredSize(new Dimension(w, h));
-        main.setMinimumSize(new Dimension(w, h));
+        //main.setPreferredSize(new Dimension(w, h));
+        //main.setMinimumSize(new Dimension(w, h));
         main.setBackground(intelliJGray);
 
         GridBagConstraints gC = new GridBagConstraints();
@@ -65,9 +67,10 @@ public class GUI extends JFrame{
 
         this.getContentPane().add(main);
         this.getContentPane().revalidate();
-        this.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width - w) / 2, (Toolkit.getDefaultToolkit().getScreenSize().height - h) / 2);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setUndecorated(true);
         this.setVisible(true);
-        this.pack();
+        //this.pack();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     public void linkInputs(List<JButton> inputs){
@@ -90,7 +93,7 @@ public class GUI extends JFrame{
                 case "start":
                     menuControls[0] = input;
                     break;
-                case "end":
+                case "restart":
                     menuControls[1] = input;
                     break;
                 case "quit":
@@ -101,8 +104,8 @@ public class GUI extends JFrame{
     }
     public JPanel showTitleBanner(){
         JPanel tB = new JPanel(true);
-        tB.setPreferredSize(new Dimension(w, (int) (h*0.2)));
-        tB.setMinimumSize(new Dimension(w, (int) (h*0.2)));
+        //tB.setPreferredSize(new Dimension(w, (int) (h*0.2)));
+        //tB.setMinimumSize(new Dimension(w, (int) (h*0.2)));
         tB.setBackground(intelliJGray);
         tB.setLayout(new GridBagLayout());
         JLabel tL = new JLabel(name.toUpperCase(), SwingConstants.CENTER);
@@ -115,8 +118,8 @@ public class GUI extends JFrame{
     }
     public JPanel showPlayerSelection(){
         JPanel pS = new JPanel(true);
-        pS.setPreferredSize(new Dimension(w, (int) (h*0.7)));
-        pS.setMinimumSize(new Dimension(w, (int) (h*0.7)));
+        //pS.setPreferredSize(new Dimension(w, (int) (h*0.7)));
+        //pS.setMinimumSize(new Dimension(w, (int) (h*0.7)));
         pS.setBackground(intelliJGray);
         pS.setLayout(new GridBagLayout());
         GridBagConstraints pC = new GridBagConstraints();
@@ -148,8 +151,8 @@ public class GUI extends JFrame{
     }
     public JPanel showMenuBar(){
         JPanel mB = new JPanel(true);
-        mB.setPreferredSize(new Dimension(w, (int) (h*0.1)));
-        mB.setMaximumSize(new Dimension(w, (int) (h*0.1)));
+        //mB.setPreferredSize(new Dimension(w, (int) (h*0.1)));
+        //mB.setMaximumSize(new Dimension(w, (int) (h*0.1)));
         mB.setBackground(intelliJGray);
         mB.setLayout(new GridBagLayout());
         GridBagConstraints mC = new GridBagConstraints();
@@ -176,7 +179,8 @@ public class GUI extends JFrame{
         }
         return mB;
     }
-    public void showMap(){}
+    public void showGameMap(){
+    }
     public boolean isPlayerJoined() {
         if(playerJoined[0]){
             return true;

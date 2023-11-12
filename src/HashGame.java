@@ -1,7 +1,9 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author Naomi Coakley
@@ -20,8 +22,8 @@ public class HashGame implements ActionListener {
     }
     public HashGame(String gameName){
         this.gameName = gameName;
-        this.width = 1600;
-        this.height = 1000;
+        this.width = Toolkit.getDefaultToolkit().getScreenSize().width;
+        this.height = Toolkit.getDefaultToolkit().getScreenSize().height;
         startUp();
     }
     public static void main(String[] args){
@@ -31,19 +33,18 @@ public class HashGame implements ActionListener {
     public void startUp(){
         this.gui = new GUI(this.gameName, width, height);
         this.entities = new EntityTable();
-        this.level = new FloorPlan(entities);
         this.iterEnt = entities.entrySet().iterator();
         this.gui.linkInputs(initializeInputs());
         this.gui.initializeGUI();
-        trapTreasures();
-        setPaths();
+
     }
     public void setPaths() {
         while(iterEnt.hasNext()){
-            GameEntity p = iterEnt.next().getValue();
-            if(p instanceof Player){
-                ((Player) p).decidePath(entities.getRoomCount(), entities);
-                System.out.println(((Player) p).getRoomKeys());
+            GameEntity e = iterEnt.next().getValue();
+            if(e instanceof Player){
+                Player p = (Player) e;
+                p.decidePath(entities.getRoomCount(), entities);
+                System.out.println(p.getRoomKeys());
             }
         }
     }
@@ -57,11 +58,23 @@ public class HashGame implements ActionListener {
     }
     public void createPlayers(){}
     public void movePlayer(int posX, int posY, int direction){}
-    public void initializeMap(){}
+    public void initializeMap(){
+        for(int i = 0; i < gui.getNumPlayersJoined(); i++){
+            Player p = new Player("Player " + (i+1), 3);
+            entities.put(((Player) p).hashCode(), p);
+        }
+
+        this.level = new FloorPlan(entities.getPlayerCount() + 3, entities);
+        level.generateRooms();
+        level.arrangeRooms();
+        level.drawHallways();
+        trapTreasures();
+        setPaths();
+    }
     public List<JButton> initializeInputs(){
         JButton addP1 = new JButton(), addP2 = new JButton(), addP3 = new JButton(), addP4 = new JButton(),
-                start = new JButton(), end = new JButton(), quit = new JButton();
-        List<JButton> inputs = new ArrayList<JButton>(Arrays.asList(addP1, addP2, addP3, addP4, start, end, quit));
+                start = new JButton(), restart = new JButton(), quit = new JButton();
+        List<JButton> inputs = new ArrayList<JButton>(Arrays.asList(addP1, addP2, addP3, addP4, start, restart, quit));
         for(JButton b : inputs){
             b.addActionListener(this);
         }
@@ -72,7 +85,7 @@ public class HashGame implements ActionListener {
         addP4.setActionCommand("P4");
         //start, quit, retry
         start.setActionCommand("start");
-        end.setActionCommand("end");
+        restart.setActionCommand("restart");
         quit.setActionCommand("quit");
         return inputs;
     }
@@ -114,9 +127,9 @@ public class HashGame implements ActionListener {
                 }
                 break;
             case "start":
-
+                initializeMap();
                 break;
-            case "end":
+            case "restart":
                 gui.dispose();
                 startUp();
                 break;
