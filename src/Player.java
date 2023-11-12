@@ -1,4 +1,7 @@
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
+import java.util.List;
 
 /**
  *
@@ -12,6 +15,8 @@ import java.util.*;
 public class Player implements GameEntity{
     private int currentScore;
     private String name;
+    private Rectangle2D playerSprite;
+    private Color playerColor;
     /**
      * {@code int} represents how much health a player has
      */
@@ -29,14 +34,16 @@ public class Player implements GameEntity{
      * Default zero-args constructor, passes default player name, health, and an empty ArrayDeque
      * */
     public Player() {
-        this("Player1", 3);
+        this("Player1", 3,0,0);
     }
     /**
      * Complete constructor
      * @param name player name
      * @param health player health
      */
-    public Player(String name, int health) {
+    public Player(String name, int health, int posX, int posY) {
+        this.playerSprite = new Rectangle2D.Double(posX, posY, 10, 10);
+        this.playerColor = new Color(142,140,140);
         this.currentScore = 0;// make final? maybe?
         this.name = name;
         this.health = health;
@@ -174,6 +181,54 @@ public class Player implements GameEntity{
      */
     public void setCurrentRoom(Room currentRoom) {
         this.currentRoom = currentRoom;
+    }
+
+    /**
+     * Returns player sprite color
+     * @return {@code playerColor}
+     */
+    public Color getPlayerColor(){
+        return playerColor;
+    }
+
+    /**
+     * Set player sprite color
+     * @param c {@code Color}
+     */
+    public void setPlayerColor(Color c){
+        playerColor = c;
+    }
+
+    /**
+     * Returns player sprite
+     * @return playerSprite
+     */
+    public Rectangle2D getPlayerSprite() {
+        return playerSprite;
+    }
+
+    /**
+     * Sets {@code playerSprite}
+     * @param playerSprite
+     */
+    public void setPlayerSprite(Rectangle2D playerSprite) {
+        this.playerSprite = playerSprite;
+    }
+
+    /**
+     * Returns if player is still in game
+     * @return lost
+     */
+    public boolean isLost() {
+        return lost;
+    }
+
+    /**
+     * Sets whether player is still in game
+     * @param lost {@code boolean}
+     */
+    public void setLost(boolean lost) {
+        this.lost = lost;
     }
 
     @Override

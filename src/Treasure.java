@@ -50,6 +50,23 @@ public class Treasure implements GameEntity{
     public void setBoobyTrapped(boolean boobyTrapped) {
         this.boobyTrapped = boobyTrapped;
     }
+
+    /**
+     * Returns {@code Rectangle2D} lootBox
+     * @return lootBox
+     */
+    public Rectangle2D getLootBox() {
+        return lootBox;
+    }
+
+    /**
+     * Sets {@code Rectangle2D} lootBox
+     * @param lootBox {@code Rectangle2D}
+     */
+    public void setLootBox(Rectangle2D lootBox) {
+        this.lootBox = lootBox;
+    }
+
     @Override
     public void store() {
     }

@@ -6,6 +6,7 @@ import java.util.Objects;
 /**
  * @author Yuliia Synytska
  */
+
 public class Room implements GameEntity{
     private Dimension roomSize;
     private boolean isEmpty;
@@ -73,7 +74,79 @@ public class Room implements GameEntity{
         int y = (int) ((Math.random() * (roomSize.height - origin.getY())) + origin.getY());
         loot = new Treasure(x, y);
     }
-    
+
+    /**
+     * Returns size of room
+     * @return roomSize
+     */
+    public Dimension getRoomSize() {
+        return roomSize;
+    }
+
+    /**
+     * Sets size of room
+     * @param roomSize size of room
+     */
+    public void setRoomSize(Dimension roomSize) {
+        this.roomSize = roomSize;
+    }
+
+    /**
+     * Returns if room is empty
+     * @return
+     */
+    public boolean isEmpty() {
+        return isEmpty;
+    }
+
+    /**
+     * Sets whether room is empty
+     * @param empty
+     */
+    public void setEmpty(boolean empty) {
+        isEmpty = empty;
+    }
+
+    /**
+     * Returns treasure
+     * @return {@link Treasure}
+     */
+    public Treasure getLoot() {
+        return loot;
+    }
+
+    /**
+     * Sets treasure
+     * @param loot {@link Treasure}
+     */
+    public void setLoot(Treasure loot) {
+        this.loot = loot;
+    }
+
+    /**
+     * Returns origin
+     * @return origin
+     */
+    public Point2D getOrigin() {
+        return origin;
+    }
+
+    /**
+     * Sets origin
+     * @param origin {@code Point2D}
+     */
+    public void setOrigin(Point2D origin) {
+        this.origin = origin;
+    }
+
+    /**
+     * Sets {@code Arraylist<Player>} player
+     * @param players
+     */
+    public void setPlayers(ArrayList<Player> players) {
+        this.players = players;
+    }
+
     @Override
     public void store() {
     }
