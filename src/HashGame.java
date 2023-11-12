@@ -36,7 +36,6 @@ public class HashGame implements ActionListener {
         this.iterEnt = entities.entrySet().iterator();
         this.gui.linkInputs(initializeInputs());
         this.gui.initializeGUI();
-
     }
     public void setPaths() {
         while(iterEnt.hasNext()){
@@ -59,15 +58,18 @@ public class HashGame implements ActionListener {
     public void createPlayers(){}
     public void movePlayer(int posX, int posY, int direction){}
     public void initializeMap(){
+        Room.maxSize = new Dimension (320, 160);
+        FloorPlan.hallCircuit = new Dimension((int)(0.8*GUI.h), (int)(.75*GUI.h)-(2*Room.maxSize.height));
+
         for(int i = 0; i < gui.getNumPlayersJoined(); i++){
             Player p = new Player("Player " + (i+1), 3);
             entities.put(((Player) p).hashCode(), p);
         }
 
         this.level = new FloorPlan(entities.getPlayerCount() + 3, entities);
-        level.generateRooms();
+        level.buildLevel();
         level.arrangeRooms();
-        level.drawHallways();
+        level.arrangeHallways();
         trapTreasures();
         setPaths();
     }

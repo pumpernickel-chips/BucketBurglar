@@ -7,11 +7,11 @@ import java.util.List;
  */
 public class GUI extends JFrame{
     public static Dimension screenSize;
+    public static int h, w;
     private String name;
     private boolean[] playerJoined;
-    private int h, w;
     private final static Font buttonFont = new Font("Hevetica", Font.BOLD, 18);
-    private JPanel main, title, select, menu, game;
+    private JPanel main, title, select, menu, game, level;
     private JButton[] joinButtons;
     private JButton[] menuControls;
     private static final Color[] playerColors = new Color[]{new Color(28, 129, 248), new Color(234, 57, 132), new Color(18, 155, 26), new Color(210, 108, 29)};
@@ -29,49 +29,45 @@ public class GUI extends JFrame{
     public GUI(String title, int width, int height){
         super(title);
         this.name = title;
-        this.w = width;
-        this.h = height;
+
+        w = width;
+        h = height;
         screenSize = new Dimension(w, h);
+
+        main = new JPanel(new GridBagLayout(), true);
+        main.setBackground(intelliJGray);
+        this.setContentPane(main);
+
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setUndecorated(true);
+        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     public void initializeGUI(){
         title = showTitleBanner();
         select = showPlayerSelection();
         menu = showMenuBar();
 
-        //this.setPreferredSize(new Dimension(w, h));
-        //this.setMinimumSize(new Dimension(w, h));
-        this.setBackground(intelliJGray);
 
-        main = new JPanel(new GridBagLayout(), true);
-        //main.setPreferredSize(new Dimension(w, h));
-        //main.setMinimumSize(new Dimension(w, h));
-        main.setBackground(intelliJGray);
+        this.setBackground(intelliJGray);
 
         GridBagConstraints gC = new GridBagConstraints();
 
         gC.weightx = 1;
-        gC.ipadx = 20;
-        gC.ipady = 20;
-        gC.insets = new Insets (10,10,10,10);
-        //define unique gC.weighty & add by row, starting with 0
+        //define unique gC.fill & gC.weighty, then add by row starting at 0
+        gC.fill = GridBagConstraints.HORIZONTAL;
         gC.gridy = 0;
-        gC.weighty = 0.2;
+        gC.weighty = 0.06;
         main.add(title, gC);
-        gC.weighty = 0.7;
+        gC.fill = GridBagConstraints.BOTH;
+        gC.weighty = 0.9;
         gC.gridy++;
         main.add(select, gC);
-        gC.weighty = 0.1;
+        gC.fill = GridBagConstraints.HORIZONTAL;
+        gC.weighty = 0.04;
         gC.gridy++;
         main.add(menu, gC);
-
-
-        this.getContentPane().add(main);
-        this.getContentPane().revalidate();
-        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        this.setUndecorated(true);
-        this.setVisible(true);
-        //this.pack();
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        revalidate();
     }
     public void linkInputs(List<JButton> inputs){
         joinButtons = new JButton[4];
@@ -143,7 +139,7 @@ public class GUI extends JFrame{
             b.setFocusPainted(false);
             b.setBorder(BorderFactory.createLineBorder((playerNum == 1? playerColors[playerNum - 1] : Color.LIGHT_GRAY), 4, false));
             b.setFont(buttonFont);
-            //add every 2 columns, starting with 1
+            //add every 2 columns starting at 1
             pC.gridx += (playerNum == 1? 1 : 2);
             pS.add(b, pC);
         }
@@ -157,8 +153,6 @@ public class GUI extends JFrame{
         mB.setLayout(new GridBagLayout());
         GridBagConstraints mC = new GridBagConstraints();
         //constraints applying to all menuControls
-        mC.weighty = 0;
-        mC.weightx = 0;
         mC.gridx = 0;
         mC.gridy = 0;
         mC.ipadx = 20;
@@ -166,7 +160,9 @@ public class GUI extends JFrame{
         mC.insets = new Insets (20,20,20,20);
         mC.anchor = GridBagConstraints.SOUTH;
         mC.fill = GridBagConstraints.HORIZONTAL;
-        //add every 1 column, starting with 0
+        //add every 1 column starting at 0
+        mC.weightx = 1;
+        mB.add(Box.createHorizontalStrut(0), mC);
         for(JButton b : menuControls){
             b.setText(b.getActionCommand().toUpperCase());
             b.setBackground(Color.DARK_GRAY);
@@ -174,9 +170,20 @@ public class GUI extends JFrame{
             b.setFocusPainted(false);
             b.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 4, false));
             b.setFont(buttonFont);
-            mB.add(b, mC);
             mC.gridx++;
+            mC.weightx = 0.6;
+            mB.add(Box.createHorizontalStrut(0), mC);
+            mC.gridx++;
+            mC.weightx = 0;
+            mB.add(b, mC);
+            mC.weightx = 0.6;
         }
+
+        mC.gridx++;
+        mB.add(Box.createHorizontalStrut(0), mC);
+        mC.weightx = 1;
+        mC.gridx++;
+        mB.add(Box.createHorizontalStrut(0), mC);
         return mB;
     }
     public void showGameMap(){
