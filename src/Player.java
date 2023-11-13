@@ -20,7 +20,7 @@ public class Player implements GameEntity{
     /**
      * {@code Deque} containing path for player to take
      */
-    private Deque<Integer> roomKeys;
+    private Deque<String> roomKeys;
     private Room currentRoom;
     /**
      * {@code true} if player is out of the game
@@ -43,7 +43,7 @@ public class Player implements GameEntity{
         this.currentScore = 0;// make final? maybe?
         this.name = name;
         this.health = health;
-        this.roomKeys = roomKeys;
+        this.roomKeys = new ArrayDeque<String>();
         this.currentRoom = null;
         this.lost = false;
     }
@@ -66,7 +66,7 @@ public class Player implements GameEntity{
      * Method for the player to decide a path to move in/around the castle/rooms
      */
     public void decidePath(int numberOfRooms, EntityTable allRooms){
-        List<Integer> keysAsArray = new ArrayList<>(allRooms.keySet());
+        List<String> keysAsArray = new ArrayList<String>(allRooms.keySet());
         Collections.shuffle(keysAsArray);
         roomKeys = new ArrayDeque<>();
         for (int i = 0; i < Math.min(numberOfRooms, keysAsArray.size()); i++) {
@@ -77,7 +77,7 @@ public class Player implements GameEntity{
      * Method to get next room from roomKeys {@code Deque<Integer>}
      * @return {@code roomKeys.poll}
      */
-    public Integer getNextRoom() {
+    public String getNextRoom() {
         return roomKeys.poll();
     }
     /**
@@ -139,14 +139,14 @@ public class Player implements GameEntity{
      * Method returns {@code Deque} roomKeys containing the rooms
      * @return roomKeys
      */
-    public Deque<Integer> getRoomKeys() {
+    public Deque<String> getRoomKeys() {
         return roomKeys;
     }
     /**
      * Method to set {@code Deque} roomKeys
      * @param roomKeys {@code Deque} roomKeys
      */
-    public void setRoomKeys(Deque<Integer> roomKeys) {
+    public void setRoomKeys(Deque<String> roomKeys) {
         this.roomKeys = roomKeys;
     }
     /**
@@ -209,7 +209,8 @@ public class Player implements GameEntity{
     public void store() {
     }
     @Override
-    public void retrieve() {
+    public Rectangle2D getSprite() {
+        return this.playerSprite;
     }
     @Override
     public void remove() {

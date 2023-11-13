@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
@@ -8,6 +9,7 @@ import java.util.List;
 public class GUI extends JFrame{
     public static Dimension screenSize;
     public static int h, w;
+    public static Point2D origin;
     private String name;
     private boolean[] playerJoined;
     private final static Font buttonFont = new Font("Hevetica", Font.BOLD, 18);
@@ -15,7 +17,7 @@ public class GUI extends JFrame{
     private JButton[] joinButtons;
     private JButton[] menuControls;
     private static final Color[] playerColors = new Color[]{new Color(28, 129, 248), new Color(234, 57, 132), new Color(18, 155, 26), new Color(210, 108, 29)};
-    private static final Color intelliJGray = new Color(43, 43, 44, 255);
+    public static final Color intelliJGray = new Color(43, 43, 44, 255);
     /**
      * Default zero-args constructor, passes default title to complete constructor
      * */
@@ -33,9 +35,11 @@ public class GUI extends JFrame{
         w = width;
         h = height;
         screenSize = new Dimension(w, h);
+        origin = new Point2D.Double(w/2.,h/2.);
 
         main = new JPanel(new GridBagLayout(), true);
         main.setBackground(intelliJGray);
+        this.setBackground(intelliJGray);
         this.setContentPane(main);
 
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -43,30 +47,27 @@ public class GUI extends JFrame{
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-    public void initializeGUI(){
+    public void showMainMenu(){
         title = showTitleBanner();
         select = showPlayerSelection();
-        menu = showMenuBar();
+        menu = showNavigationBar();
 
+        GridBagConstraints mC = new GridBagConstraints();
 
-        this.setBackground(intelliJGray);
-
-        GridBagConstraints gC = new GridBagConstraints();
-
-        gC.weightx = 1;
+        mC.weightx = 1;
         //define unique gC.fill & gC.weighty, then add by row starting at 0
-        gC.fill = GridBagConstraints.HORIZONTAL;
-        gC.gridy = 0;
-        gC.weighty = 0.06;
-        main.add(title, gC);
-        gC.fill = GridBagConstraints.BOTH;
-        gC.weighty = 0.9;
-        gC.gridy++;
-        main.add(select, gC);
-        gC.fill = GridBagConstraints.HORIZONTAL;
-        gC.weighty = 0.04;
-        gC.gridy++;
-        main.add(menu, gC);
+        mC.fill = GridBagConstraints.HORIZONTAL;
+        mC.gridy = 0;
+        mC.weighty = 0.06;
+        main.add(title, mC);
+        mC.fill = GridBagConstraints.BOTH;
+        mC.weighty = 0.9;
+        mC.gridy++;
+        main.add(select, mC);
+        mC.fill = GridBagConstraints.HORIZONTAL;
+        mC.weighty = 0.04;
+        mC.gridy++;
+        main.add(menu, mC);
         revalidate();
     }
     public void linkInputs(List<JButton> inputs){
@@ -100,8 +101,6 @@ public class GUI extends JFrame{
     }
     public JPanel showTitleBanner(){
         JPanel tB = new JPanel(true);
-        //tB.setPreferredSize(new Dimension(w, (int) (h*0.2)));
-        //tB.setMinimumSize(new Dimension(w, (int) (h*0.2)));
         tB.setBackground(intelliJGray);
         tB.setLayout(new GridBagLayout());
         JLabel tL = new JLabel(name.toUpperCase(), SwingConstants.CENTER);
@@ -114,8 +113,6 @@ public class GUI extends JFrame{
     }
     public JPanel showPlayerSelection(){
         JPanel pS = new JPanel(true);
-        //pS.setPreferredSize(new Dimension(w, (int) (h*0.7)));
-        //pS.setMinimumSize(new Dimension(w, (int) (h*0.7)));
         pS.setBackground(intelliJGray);
         pS.setLayout(new GridBagLayout());
         GridBagConstraints pC = new GridBagConstraints();
@@ -145,24 +142,22 @@ public class GUI extends JFrame{
         }
         return pS;
     }
-    public JPanel showMenuBar(){
-        JPanel mB = new JPanel(true);
-        //mB.setPreferredSize(new Dimension(w, (int) (h*0.1)));
-        //mB.setMaximumSize(new Dimension(w, (int) (h*0.1)));
-        mB.setBackground(intelliJGray);
-        mB.setLayout(new GridBagLayout());
-        GridBagConstraints mC = new GridBagConstraints();
+    public JPanel showNavigationBar(){
+        JPanel nB = new JPanel(true);
+        nB.setBackground(intelliJGray);
+        nB.setLayout(new GridBagLayout());
+        GridBagConstraints nC = new GridBagConstraints();
         //constraints applying to all menuControls
-        mC.gridx = 0;
-        mC.gridy = 0;
-        mC.ipadx = 20;
-        mC.ipady = 20;
-        mC.insets = new Insets (20,20,20,20);
-        mC.anchor = GridBagConstraints.SOUTH;
-        mC.fill = GridBagConstraints.HORIZONTAL;
+        nC.gridx = 0;
+        nC.gridy = 0;
+        nC.ipadx = 20;
+        nC.ipady = 20;
+        nC.insets = new Insets (20,20,20,20);
+        nC.anchor = GridBagConstraints.SOUTH;
+        nC.fill = GridBagConstraints.HORIZONTAL;
         //add every 1 column starting at 0
-        mC.weightx = 1;
-        mB.add(Box.createHorizontalStrut(0), mC);
+        nC.weightx = 1;
+        nB.add(Box.createHorizontalStrut(0), nC);
         for(JButton b : menuControls){
             b.setText(b.getActionCommand().toUpperCase());
             b.setBackground(Color.DARK_GRAY);
@@ -170,23 +165,46 @@ public class GUI extends JFrame{
             b.setFocusPainted(false);
             b.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 4, false));
             b.setFont(buttonFont);
-            mC.gridx++;
-            mC.weightx = 0.6;
-            mB.add(Box.createHorizontalStrut(0), mC);
-            mC.gridx++;
-            mC.weightx = 0;
-            mB.add(b, mC);
-            mC.weightx = 0.6;
+            nC.gridx++;
+            nC.weightx = 0.6;
+            nB.add(Box.createHorizontalStrut(0), nC);
+            nC.gridx++;
+            nC.weightx = 0;
+            nB.add(b, nC);
+            nC.weightx = 0.6;
         }
 
-        mC.gridx++;
-        mB.add(Box.createHorizontalStrut(0), mC);
-        mC.weightx = 1;
-        mC.gridx++;
-        mB.add(Box.createHorizontalStrut(0), mC);
-        return mB;
+        nC.gridx++;
+        nB.add(Box.createHorizontalStrut(0), nC);
+        nC.weightx = 1;
+        nC.gridx++;
+        nB.add(Box.createHorizontalStrut(0), nC);
+        return nB;
     }
-    public void showGameMap(){
+    public void showGameSession(FloorPlan gameMap){
+        this.level = gameMap;
+        this.game = new JPanel(new GridBagLayout(), true);
+        game.setBackground(intelliJGray);
+        GridBagConstraints gC = new GridBagConstraints();
+
+        JPanel centerDisplay = new JPanel(new GridBagLayout(), true);
+        centerDisplay.setBackground(Color.BLACK);
+        centerDisplay.setBounds((int)FloorPlan.getCorner(1).getX()+64,(int)FloorPlan.getCorner(1).getY()+64,FloorPlan.getHall().width-128, FloorPlan.getHall().height-128);
+        level.add(centerDisplay);
+
+        gC.weightx = 1;
+        gC.gridy = 0;
+        gC.weighty = 0.96;
+        gC.fill = GridBagConstraints.BOTH;
+        game.add(level, gC);
+
+        gC.fill = GridBagConstraints.HORIZONTAL;
+        gC.weighty = 0.04;
+        gC.gridy++;
+        game.add(menu, gC);
+
+        this.setContentPane(game);
+        this.revalidate();
     }
     public boolean isPlayerJoined() {
         if(playerJoined[0]){

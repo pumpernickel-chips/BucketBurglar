@@ -16,7 +16,7 @@ public class HashGame implements ActionListener {
     private GUI gui;
     private EntityTable entities;
     private FloorPlan level;
-    private Iterator<Map.Entry<Integer, GameEntity>> iterEnt;
+    //private Iterator<Map.Entry<Integer, GameEntity>> iterEnt;
     public HashGame(){
         this("Untitled");
     }
@@ -33,45 +33,46 @@ public class HashGame implements ActionListener {
     public void startUp(){
         this.gui = new GUI(this.gameName, width, height);
         this.entities = new EntityTable();
-        this.iterEnt = entities.entrySet().iterator();
+        //this.iterEnt = entities.entrySet().iterator();
         this.gui.linkInputs(initializeInputs());
-        this.gui.initializeGUI();
+        this.gui.showMainMenu();
     }
     public void setPaths() {
-        while(iterEnt.hasNext()){
+        /*while(iterEnt.hasNext()){
             GameEntity e = iterEnt.next().getValue();
             if(e instanceof Player){
                 Player p = (Player) e;
                 p.decidePath(entities.getRoomCount(), entities);
                 System.out.println(p.getRoomKeys());
             }
-        }
+        }*/
     }
     public void trapTreasures(){
-        while(iterEnt.hasNext()){
+        /*while(iterEnt.hasNext()){
             GameEntity t = iterEnt.next().getValue();
             if(t instanceof Treasure){
                 ((Treasure) t).setBoobyTrapped(true);//method to be written in Treasure
             }
-        }
+        }*/
     }
-    public void createPlayers(){}
-    public void movePlayer(int posX, int posY, int direction){}
-    public void initializeMap(){
-        Room.maxSize = new Dimension (320, 160);
-        FloorPlan.hallCircuit = new Dimension((int)(0.8*GUI.h), (int)(.75*GUI.h)-(2*Room.maxSize.height));
-
+    public void createPlayers(){
         for(int i = 0; i < gui.getNumPlayersJoined(); i++){
             Player p = new Player("Player " + (i+1), 3);
-            entities.put(((Player) p).hashCode(), p);
+            entities.put(p.getName(), p);
         }
+    }
+    public void movePlayer(int posX, int posY, int direction){
 
-        this.level = new FloorPlan(entities.getPlayerCount() + 3, entities);
+    }
+    public void initializeLevel(){
+        Room.maxSize = new Dimension (320, 160);
+        FloorPlan.setHall(new Dimension((int)(0.4*GUI.h), (int)(.4*GUI.h)));
+
+        this.level = new FloorPlan(entities);
         level.buildLevel();
-        level.arrangeRooms();
-        level.arrangeHallways();
         trapTreasures();
         setPaths();
+        gui.showGameSession(level);
     }
     public List<JButton> initializeInputs(){
         JButton addP1 = new JButton(), addP2 = new JButton(), addP3 = new JButton(), addP4 = new JButton(),
@@ -129,7 +130,10 @@ public class HashGame implements ActionListener {
                 }
                 break;
             case "start":
-                initializeMap();
+                if(gui.getNumPlayersJoined()>0){
+                    createPlayers();
+                    initializeLevel();
+                }
                 break;
             case "restart":
                 gui.dispose();

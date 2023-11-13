@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Objects;
 /**
@@ -11,6 +12,7 @@ public class Room implements GameEntity{
     private Dimension roomSize;
     private boolean isEmpty;
     private Treasure loot;
+    private Rectangle2D roomSprite;
     /** The absolute coordinates at the center of the {@code Room} */
     private Point2D origin;
     private ArrayList<Player> players;
@@ -32,7 +34,8 @@ public class Room implements GameEntity{
         this.roomSize = new Dimension(width, height);
         this.isEmpty = isEmpty;
         this.origin = new Point(posX, posY);
-        players = new ArrayList<Player>();
+        this.players = new ArrayList<Player>();
+        this.roomSprite = new Rectangle2D.Double(origin.getX(), origin.getY(), roomSize.width, roomSize.height);
     }
     /**
      * Method to add player to room
@@ -131,11 +134,18 @@ public class Room implements GameEntity{
     public void setPlayers(ArrayList<Player> players) {
         this.players = players;
     }
+    public Rectangle2D getRoomSprite() {
+        return roomSprite;
+    }
+    public void setRoomSprite(Rectangle2D roomSprite) {
+        this.roomSprite = roomSprite;
+    }
     @Override
     public void store() {
     }
     @Override
-    public void retrieve() {
+    public Rectangle2D getSprite() {
+        return this.roomSprite;
     }
     @Override
     public void remove() {

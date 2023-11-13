@@ -1,5 +1,5 @@
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Ellipse2D;
 
 /**
  *
@@ -11,8 +11,8 @@ import java.awt.geom.Rectangle2D;
  *
  */
 
-public class Treasure implements GameEntity{
-    private Rectangle2D lootBox;
+public class Treasure{
+    private Ellipse2D.Double lootSprite;
     public static final Color lootRGB = new Color(244, 184, 98);
     /**
      * {@code true} if the room contains a booby trap
@@ -32,7 +32,7 @@ public class Treasure implements GameEntity{
      */
     public Treasure(int posX, int posY){
         this.boobyTrapped = false;
-        this.lootBox = new Rectangle2D.Double(posX, posY, 10, 10);
+        this.lootSprite = new Ellipse2D.Double(posX-5, posY-5, 10, 10);
     }
 
     /**
@@ -55,25 +55,15 @@ public class Treasure implements GameEntity{
      * Returns {@code Rectangle2D} lootBox
      * @return lootBox
      */
-    public Rectangle2D getLootBox() {
-        return lootBox;
+    public Ellipse2D.Double getSprite() {
+        return this.lootSprite;
     }
 
     /**
-     * Sets {@code Rectangle2D} lootBox
-     * @param lootBox {@code Rectangle2D}
+     * Sets {@code Ellipse2D.Double} lootSprite
+     * @param ellipse {@code Ellipse2D.Double}
      */
-    public void setLootBox(Rectangle2D lootBox) {
-        this.lootBox = lootBox;
-    }
-
-    @Override
-    public void store() {
-    }
-    @Override
-    public void retrieve() {
-    }
-    @Override
-    public void remove() {
+    public void setLootSprite(Ellipse2D.Double ellipse) {
+        this.lootSprite = ellipse;
     }
 }

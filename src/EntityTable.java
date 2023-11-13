@@ -3,7 +3,7 @@
 import java.util.HashMap;
 import java.util.Random;
 
-public class EntityTable extends HashMap<Integer, GameEntity>{
+public class EntityTable extends HashMap<String, GameEntity>{
     private boolean gameStarted;
     private HashMap<Integer, Integer> treasureMap;
     private int roomCount, playerCount, treasureCount, baseTrapCount, levelTrapCount;
@@ -95,7 +95,7 @@ public class EntityTable extends HashMap<Integer, GameEntity>{
     }
 
     @Override
-    public GameEntity put(Integer key, GameEntity value) {
+    public GameEntity put(String key, GameEntity value) {
         if(value instanceof Player){
             playerCount++;
         }else if (value instanceof Room){
