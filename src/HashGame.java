@@ -13,7 +13,8 @@ public class HashGame implements ActionListener {
     private int width, height;
     public static final int STAY = 0, NORTH = 1, EAST = 2, SOUTH = 3, WEST = 4, N_EAST = 5, N_WEST = 6, S_EAST = 7, S_WEST = 8;
     public static final int[] DIRECTIONS = new int[]{0, 1 ,2 , 3, 4, 5, 6, 7, 8};
-    private GUI gui;
+    private boolean inGame;
+    private GUI window;
     private EntityTable entities;
     private FloorPlan level;
     //private Iterator<Map.Entry<Integer, GameEntity>> iterEnt;
@@ -24,18 +25,18 @@ public class HashGame implements ActionListener {
         this.gameName = gameName;
         this.width = Toolkit.getDefaultToolkit().getScreenSize().width;
         this.height = Toolkit.getDefaultToolkit().getScreenSize().height;
-        startUp();
+        selectPlayers();
     }
     public static void main(String[] args){
             String gameName = "Untitled Game About Stealing Treasure";
             HashGame test = new HashGame(gameName);
     }
-    public void startUp(){
-        this.gui = new GUI(this.gameName, width, height);
+    public void selectPlayers(){
+        inGame = false;
+        this.window = new GUI(this.gameName, width, height);
         this.entities = new EntityTable();
-        //this.iterEnt = entities.entrySet().iterator();
-        this.gui.linkInputs(initializeInputs());
-        this.gui.showMainMenu();
+        window.linkInputs(initializeInputs());
+        window.showMainMenu();
     }
     public void setPaths() {
         /*while(iterEnt.hasNext()){
@@ -55,9 +56,15 @@ public class HashGame implements ActionListener {
             }
         }*/
     }
+    public void startGame(){
+        this.inGame = true;
+        createPlayers();
+        initializeLevel();
+    }
     public void createPlayers(){
-        for(int i = 0; i < gui.getNumPlayersJoined(); i++){
+        for(int i = 0; i < window.getNumPlayersJoined(); i++){
             Player p = new Player("Player " + (i+1), 3);
+            p.setPlayerColor(GUI.playerColors[i]);
             entities.put(p.getName(), p);
         }
     }
@@ -66,18 +73,18 @@ public class HashGame implements ActionListener {
     }
     public void initializeLevel(){
         Room.maxSize = new Dimension (320, 160);
-        FloorPlan.setHall(new Dimension((int)(0.4*GUI.h), (int)(.4*GUI.h)));
+        FloorPlan.setHall(new Dimension((int)(0.5*GUI.h), (int)(.4*GUI.h)));
 
         this.level = new FloorPlan(entities);
         level.buildLevel();
         trapTreasures();
         setPaths();
-        gui.showGameSession(level);
+        window.showGameSession(level);
     }
     public List<JButton> initializeInputs(){
         JButton addP1 = new JButton(), addP2 = new JButton(), addP3 = new JButton(), addP4 = new JButton(),
-                start = new JButton(), restart = new JButton(), quit = new JButton();
-        List<JButton> inputs = new ArrayList<JButton>(Arrays.asList(addP1, addP2, addP3, addP4, start, restart, quit));
+                start = new JButton(), newGame = new JButton(), quit = new JButton();
+        List<JButton> inputs = new ArrayList<JButton>(Arrays.asList(addP1, addP2, addP3, addP4, start, newGame, quit));
         for(JButton b : inputs){
             b.addActionListener(this);
         }
@@ -88,7 +95,7 @@ public class HashGame implements ActionListener {
         addP4.setActionCommand("P4");
         //start, quit, retry
         start.setActionCommand("start");
-        restart.setActionCommand("restart");
+        newGame.setActionCommand("new game");
         quit.setActionCommand("quit");
         return inputs;
     }
@@ -96,51 +103,49 @@ public class HashGame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         switch(e.getActionCommand()){
             case "P1":
-                if(!gui.isPlayerJoined(1) && !gui.isPlayerJoined(2)){
-                    gui.updateJoinButtons(true, 1);
-                }else if(gui.isPlayerJoined(1) && !gui.isPlayerJoined(2)){
-                    gui.updateJoinButtons(false, 1);
+                if(!window.isPlayerJoined(1) && !window.isPlayerJoined(2)){
+                    window.updateJoinButtons(true, 1);
+                }else if(window.isPlayerJoined(1) && !window.isPlayerJoined(2)){
+                    window.updateJoinButtons(false, 1);
                 }
                 break;
             case "P2":
-                if(gui.isPlayerJoined(1)) {
-                    if (!gui.isPlayerJoined(2) && !gui.isPlayerJoined(3)) {
-                        gui.updateJoinButtons(true, 2);
-                    } else if (gui.isPlayerJoined(2) && !gui.isPlayerJoined(3)) {
-                        gui.updateJoinButtons(false, 2);
+                if(window.isPlayerJoined(1)) {
+                    if (!window.isPlayerJoined(2) && !window.isPlayerJoined(3)) {
+                        window.updateJoinButtons(true, 2);
+                    } else if (window.isPlayerJoined(2) && !window.isPlayerJoined(3)) {
+                        window.updateJoinButtons(false, 2);
                     }
                 }
                 break;
             case "P3":
-                if(gui.isPlayerJoined(1) && gui.isPlayerJoined(2)) {
-                    if (!gui.isPlayerJoined(3) && !gui.isPlayerJoined(4)) {
-                        gui.updateJoinButtons(true, 3);
-                    } else if (gui.isPlayerJoined(3) && !gui.isPlayerJoined(4)) {
-                        gui.updateJoinButtons(false, 3);
+                if(window.isPlayerJoined(1) && window.isPlayerJoined(2)) {
+                    if (!window.isPlayerJoined(3) && !window.isPlayerJoined(4)) {
+                        window.updateJoinButtons(true, 3);
+                    } else if (window.isPlayerJoined(3) && !window.isPlayerJoined(4)) {
+                        window.updateJoinButtons(false, 3);
                     }
                 }
                 break;
             case "P4":
-                if(gui.isPlayerJoined(1) && gui.isPlayerJoined(2) && gui.isPlayerJoined(3)) {
-                    if (!gui.isPlayerJoined(4)) {
-                        gui.updateJoinButtons(true, 4);
-                    } else if (gui.isPlayerJoined(1)) {
-                        gui.updateJoinButtons(false, 4);
+                if(window.isPlayerJoined(1) && window.isPlayerJoined(2) && window.isPlayerJoined(3)) {
+                    if (!window.isPlayerJoined(4)) {
+                        window.updateJoinButtons(true, 4);
+                    } else if (window.isPlayerJoined(1)) {
+                        window.updateJoinButtons(false, 4);
                     }
                 }
                 break;
             case "start":
-                if(gui.getNumPlayersJoined()>0){
-                    createPlayers();
-                    initializeLevel();
+                if(window.getNumPlayersJoined()>0 && !inGame){
+                    startGame();
                 }
                 break;
-            case "restart":
-                gui.dispose();
-                startUp();
+            case "new game":
+                selectPlayers();
+                window.wipeGameSession();
                 break;
             case "quit":
-                gui.dispose();
                 System.exit(0);
                 break;
         }

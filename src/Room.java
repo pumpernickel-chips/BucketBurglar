@@ -13,14 +13,16 @@ public class Room implements GameEntity{
     private boolean isEmpty;
     private Treasure loot;
     private Rectangle2D roomSprite;
+    private Point2D[] pathNodes;
     /** The absolute coordinates at the center of the {@code Room} */
-    private Point2D origin;
+    private Point2D offsetOrigin;
+    private Point2D position;
     private ArrayList<Player> players;
     /**
      * Default zero-args constructor, passes default title to complete constructor
      * */
     public Room() {
-        this(256, 256, 128, 128, true);
+        this(256, 256, 128, 128, 0, true);
     }
     /**
      * Complete constructor
@@ -30,12 +32,18 @@ public class Room implements GameEntity{
      * @param height room height
      * @param isEmpty does room have player in it
      */
-     public Room(int posX, int posY, int width, int height, boolean isEmpty) {
+     public Room(int posX, int posY, int width, int height, int node, boolean isEmpty) {
         this.roomSize = new Dimension(width, height);
         this.isEmpty = isEmpty;
-        this.origin = new Point(posX, posY);
+        this.position = new Point2D.Double(posX, posY);
         this.players = new ArrayList<Player>();
-        this.roomSprite = new Rectangle2D.Double(origin.getX(), origin.getY(), roomSize.width, roomSize.height);
+        this.roomSprite = new Rectangle2D.Double(position.getX(), position.getY(), roomSize.width, roomSize.height);
+        this.offsetOrigin = new Point2D.Double(this.roomSprite.getCenterX()-12, this.roomSprite.getCenterY()-12);
+        boolean vertical = node == 0 || node == 1 || node == 2 || node == 5 || node == 6 || node == 7;
+        boolean horizontal = node == 3 || node == 4 || node == 8 || node == 9;
+        this.offsetOrigin = new Point2D.Double( vertical? FloorPlan.pathNodes[node].getX() : this.roomSprite.getCenterX()-12,
+                                              horizontal? FloorPlan.pathNodes[node].getY() : this.roomSprite.getCenterY()-12);
+        this.pathNodes = new Point2D[]{FloorPlan.pathNodes[node], offsetOrigin};
     }
     /**
      * Method to add player to room
@@ -67,8 +75,8 @@ public class Room implements GameEntity{
      * Method to generate treasure
      */
     public void generateLoot() {
-        int x = (int) ((Math.random() * (roomSize.width - origin.getX())) + origin.getX());
-        int y = (int) ((Math.random() * (roomSize.height - origin.getY())) + origin.getY());
+        int x = (int) ((Math.random() * (roomSize.width - offsetOrigin.getX())) + offsetOrigin.getX());
+        int y = (int) ((Math.random() * (roomSize.height - offsetOrigin.getY())) + offsetOrigin.getY());
         loot = new Treasure(x, y);
     }
     /**
@@ -117,20 +125,27 @@ public class Room implements GameEntity{
      * Returns origin
      * @return origin
      */
-    public Point2D getOrigin() {
-        return origin;
+    public Point2D getOffsetOrigin() {
+        return offsetOrigin;
     }
     /**
      * Sets origin
-     * @param origin {@code Point2D}
+     * @param offsetOrigin {@code Point2D}
      */
-    public void setOrigin(Point2D origin) {
-        this.origin = origin;
+    public void setOffsetOrigin(Point2D offsetOrigin) {
+        this.offsetOrigin = offsetOrigin;
+    }
+    public Point2D[] getPathNodes() {
+        return pathNodes;
+    }
+    public void setPathNodes(Point2D[] pathNodes) {
+        this.pathNodes = pathNodes;
     }
     /**
      * Sets {@code Arraylist<Player>} player
      * @param players
      */
+
     public void setPlayers(ArrayList<Player> players) {
         this.players = players;
     }
@@ -160,7 +175,7 @@ public class Room implements GameEntity{
         if (this == o) return true;
         if (!(o instanceof Room)) return false;
         Room room = (Room) o;
-        return isEmpty == room.isEmpty && Objects.equals(roomSize, room.roomSize) && Objects.equals(origin, room.origin);
+        return isEmpty == room.isEmpty && Objects.equals(roomSize, room.roomSize) && Objects.equals(offsetOrigin, room.offsetOrigin);
     }
     /**
      * Overridden {@code hashCode} method
@@ -168,6 +183,6 @@ public class Room implements GameEntity{
      */
     @Override
     public int hashCode() {
-        return Objects.hash(roomSize, isEmpty, origin);
+        return Objects.hash(roomSize, isEmpty, offsetOrigin);
     }
 }

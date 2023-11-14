@@ -13,10 +13,10 @@ public class GUI extends JFrame{
     private String name;
     private boolean[] playerJoined;
     private final static Font buttonFont = new Font("Hevetica", Font.BOLD, 18);
-    private JPanel main, title, select, menu, game, level;
+    private JPanel main, title, select, menu, game, level, retry;
     private JButton[] joinButtons;
     private JButton[] menuControls;
-    private static final Color[] playerColors = new Color[]{new Color(28, 129, 248), new Color(234, 57, 132), new Color(18, 155, 26), new Color(210, 108, 29)};
+    public static final Color[] playerColors = new Color[]{new Color(28, 129, 248), new Color(234, 57, 132), new Color(18, 155, 26), new Color(210, 108, 29)};
     public static final Color intelliJGray = new Color(43, 43, 44, 255);
     /**
      * Default zero-args constructor, passes default title to complete constructor
@@ -35,7 +35,7 @@ public class GUI extends JFrame{
         w = width;
         h = height;
         screenSize = new Dimension(w, h);
-        origin = new Point2D.Double(w/2.,h/2.);
+        origin = new Point2D.Double(w*.5,h*.5);
 
         main = new JPanel(new GridBagLayout(), true);
         main.setBackground(intelliJGray);
@@ -50,7 +50,7 @@ public class GUI extends JFrame{
     public void showMainMenu(){
         title = showTitleBanner();
         select = showPlayerSelection();
-        menu = showNavigationBar();
+        menu = showNavigationBar(false);
 
         GridBagConstraints mC = new GridBagConstraints();
 
@@ -90,7 +90,7 @@ public class GUI extends JFrame{
                 case "start":
                     menuControls[0] = input;
                     break;
-                case "restart":
+                case "new game":
                     menuControls[1] = input;
                     break;
                 case "quit":
@@ -131,7 +131,7 @@ public class GUI extends JFrame{
         for(JButton b : joinButtons){
             playerNum++;
             b.setText("ENTER PLAYER " + playerNum);
-            b.setBackground(playerNum == 1? Color.WHITE : Color.DARK_GRAY);
+            b.setBackground(playerNum == 1? Color.LIGHT_GRAY : Color.DARK_GRAY);
             b.setForeground(playerNum == 1? Color.DARK_GRAY : Color.LIGHT_GRAY);
             b.setFocusPainted(false);
             b.setBorder(BorderFactory.createLineBorder((playerNum == 1? playerColors[playerNum - 1] : Color.LIGHT_GRAY), 4, false));
@@ -142,7 +142,7 @@ public class GUI extends JFrame{
         }
         return pS;
     }
-    public JPanel showNavigationBar(){
+    public JPanel showNavigationBar(boolean inGame){
         JPanel nB = new JPanel(true);
         nB.setBackground(intelliJGray);
         nB.setLayout(new GridBagLayout());
@@ -159,21 +159,22 @@ public class GUI extends JFrame{
         nC.weightx = 1;
         nB.add(Box.createHorizontalStrut(0), nC);
         for(JButton b : menuControls){
-            b.setText(b.getActionCommand().toUpperCase());
-            b.setBackground(Color.DARK_GRAY);
-            b.setForeground(Color.LIGHT_GRAY);
-            b.setFocusPainted(false);
-            b.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 4, false));
-            b.setFont(buttonFont);
-            nC.gridx++;
-            nC.weightx = 0.6;
-            nB.add(Box.createHorizontalStrut(0), nC);
-            nC.gridx++;
-            nC.weightx = 0;
-            nB.add(b, nC);
-            nC.weightx = 0.6;
+            if(!inGame && !b.getActionCommand().equals("new game") || inGame && !b.getActionCommand().equals("start")) {
+                b.setText(b.getActionCommand().toUpperCase());
+                b.setBackground(Color.DARK_GRAY);
+                b.setForeground(Color.LIGHT_GRAY);
+                b.setFocusPainted(false);
+                b.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 4, false));
+                b.setFont(buttonFont);
+                nC.gridx++;
+                nC.weightx = 0.6;
+                nB.add(Box.createHorizontalStrut(0), nC);
+                nC.gridx++;
+                nC.weightx = 0;
+                nB.add(b, nC);
+                nC.weightx = 0.6;
+            }
         }
-
         nC.gridx++;
         nB.add(Box.createHorizontalStrut(0), nC);
         nC.weightx = 1;
@@ -183,13 +184,14 @@ public class GUI extends JFrame{
     }
     public void showGameSession(FloorPlan gameMap){
         this.level = gameMap;
+        this.retry = showNavigationBar(true);
         this.game = new JPanel(new GridBagLayout(), true);
         game.setBackground(intelliJGray);
         GridBagConstraints gC = new GridBagConstraints();
 
         JPanel centerDisplay = new JPanel(new GridBagLayout(), true);
         centerDisplay.setBackground(Color.BLACK);
-        centerDisplay.setBounds((int)FloorPlan.getCorner(1).getX()+64,(int)FloorPlan.getCorner(1).getY()+64,FloorPlan.getHall().width-128, FloorPlan.getHall().height-128);
+        centerDisplay.setBounds((int)FloorPlan.hallNodes[FloorPlan.NWc].getX()+48,(int)FloorPlan.hallNodes[FloorPlan.NWc].getY()+48,FloorPlan.getHall().width-96, FloorPlan.getHall().height-96);
         level.add(centerDisplay);
 
         gC.weightx = 1;
@@ -201,10 +203,13 @@ public class GUI extends JFrame{
         gC.fill = GridBagConstraints.HORIZONTAL;
         gC.weighty = 0.04;
         gC.gridy++;
-        game.add(menu, gC);
+        game.add(retry, gC);
 
         this.setContentPane(game);
         this.revalidate();
+    }
+    public void wipeGameSession(){
+        this.game.setVisible(false);
     }
     public boolean isPlayerJoined() {
         if(playerJoined[0]){
@@ -224,13 +229,13 @@ public class GUI extends JFrame{
     }
     public void updateJoinButtons(boolean joined, int playerNum) {
         this.playerJoined[playerNum-1] = joined;
-        joinButtons[playerNum - 1].setBackground(joined? playerColors[playerNum - 1] : Color.WHITE);
+        joinButtons[playerNum - 1].setBackground(joined? playerColors[playerNum - 1] : Color.LIGHT_GRAY);
         joinButtons[playerNum - 1].setForeground(joined? Color.WHITE : Color.DARK_GRAY);
         joinButtons[playerNum - 1].setBorder(BorderFactory.createLineBorder((joined? Color.WHITE : playerColors[playerNum - 1]), 4, false));
         joinButtons[playerNum - 1].setText(joined? ("PLAYER " + playerNum + " JOINED") : ("ENTER PLAYER " + playerNum));
 
         if(playerNum<4){
-            joinButtons[playerNum].setBackground(joined? Color.WHITE : Color.DARK_GRAY);
+            joinButtons[playerNum].setBackground(joined? Color.LIGHT_GRAY : Color.DARK_GRAY);
             joinButtons[playerNum].setForeground(joined? Color.DARK_GRAY : Color.LIGHT_GRAY);
             joinButtons[playerNum].setBorder(BorderFactory.createLineBorder((joined? playerColors[playerNum] : Color.LIGHT_GRAY), 4, false));
         }
