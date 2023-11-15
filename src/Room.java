@@ -8,7 +8,6 @@ import java.util.Objects;
  * @author John Beaudry
  */
 public class Room implements GameEntity{
-    public static Dimension maxSize;
     private Dimension roomSize;
     private boolean isEmpty;
     private Treasure loot;
@@ -149,21 +148,16 @@ public class Room implements GameEntity{
     public void setPlayers(ArrayList<Player> players) {
         this.players = players;
     }
-    public Rectangle2D getRoomSprite() {
-        return roomSprite;
-    }
     public void setRoomSprite(Rectangle2D roomSprite) {
         this.roomSprite = roomSprite;
     }
     @Override
-    public void store() {
+    public boolean positionSprite(int distX, int distY) {
+        return false;
     }
     @Override
     public Rectangle2D getSprite() {
         return this.roomSprite;
-    }
-    @Override
-    public void remove() {
     }
     /**
      * Overridden {@code equals()} method

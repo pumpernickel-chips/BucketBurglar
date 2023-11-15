@@ -93,7 +93,7 @@ public class EntityTable extends HashMap<String, GameEntity>{
     public void setLevelTrapCount(int levelTrapCount) {
         this.levelTrapCount = levelTrapCount;
     }
-
+    //TODO: fix probably?
     @Override
     public GameEntity put(String key, GameEntity value) {
         if(value instanceof Player){

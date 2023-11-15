@@ -1,6 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -9,11 +12,13 @@ import java.util.List;
 public class GUI extends JFrame{
     public static Dimension screenSize;
     public static int h, w;
-    public static Point2D origin;
+    public static Double scale;
+    public static Point2D windowOrigin;
     private String name;
     private boolean[] playerJoined;
     private final static Font buttonFont = new Font("Hevetica", Font.BOLD, 18);
-    private JPanel main, title, select, menu, game, level, retry;
+    private JPanel main, title, select, menu, game, retry;
+    private FloorPlan level;
     private JButton[] joinButtons;
     private JButton[] menuControls;
     public static final Color[] playerColors = new Color[]{new Color(28, 129, 248), new Color(234, 57, 132), new Color(18, 155, 26), new Color(210, 108, 29)};
@@ -21,9 +26,7 @@ public class GUI extends JFrame{
     /**
      * Default zero-args constructor, passes default title to complete constructor
      * */
-    public GUI() {
-        this("Game Title Here", 800, 600);
-    }
+    public GUI() {this("Game Title Here", 800, 600);}
     /**
      * Complete constructor
      * @param title title of game
@@ -35,7 +38,9 @@ public class GUI extends JFrame{
         w = width;
         h = height;
         screenSize = new Dimension(w, h);
-        origin = new Point2D.Double(w*.5,h*.5);
+        scale = h*.00069;//graphics were scaled for a 1440p monitor, thus .00069 ≈ 1/1440 and multiplying users' monitor height by it outputs a factor by which to scale various dimensions by
+        System.out.println(screenSize);
+        windowOrigin = new Point2D.Double(w*.5,h*.5);
 
         main = new JPanel(new GridBagLayout(), true);
         main.setBackground(intelliJGray);
@@ -192,7 +197,7 @@ public class GUI extends JFrame{
         JPanel centerDisplay = new JPanel(new GridBagLayout(), true);
         centerDisplay.setBackground(Color.BLACK);
         centerDisplay.setBounds((int)FloorPlan.hallNodes[FloorPlan.NWc].getX()+48,(int)FloorPlan.hallNodes[FloorPlan.NWc].getY()+48,FloorPlan.getHall().width-96, FloorPlan.getHall().height-96);
-        level.add(centerDisplay);
+        //level.add(centerDisplay);
 
         gC.weightx = 1;
         gC.gridy = 0;
@@ -208,8 +213,12 @@ public class GUI extends JFrame{
         this.setContentPane(game);
         this.revalidate();
     }
-    public void wipeGameSession(){
-        this.game.setVisible(false);
+    public void advanceFrame(String[] playerKeys){
+        Deque<String> keys = new ArrayDeque<String>(Arrays.asList(playerKeys));
+        for(String key : playerKeys) keys.push(key);
+        level.setPlayerKeys(keys);
+        level.setSimulating(true);
+        repaint();
     }
     public boolean isPlayerJoined() {
         if(playerJoined[0]){

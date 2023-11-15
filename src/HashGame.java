@@ -1,10 +1,12 @@
+import com.sun.glass.ui.Clipboard;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
-
+import javax.swing.Timer;
 /**
  * @author Naomi Coakley
  */
@@ -13,15 +15,21 @@ public class HashGame implements ActionListener {
     private int width, height;
     public static final int STAY = 0, NORTH = 1, EAST = 2, SOUTH = 3, WEST = 4, N_EAST = 5, N_WEST = 6, S_EAST = 7, S_WEST = 8;
     public static final int[] DIRECTIONS = new int[]{0, 1 ,2 , 3, 4, 5, 6, 7, 8};
+    private String playerKeys[];
     private boolean inGame;
     private GUI window;
-    private EntityTable entities;
+    public static EntityTable entities;
     private FloorPlan level;
+    private Timer sim;
+    private int elapsedMs, bufferMs, fps;
+    private List<String> ranking;
+
     //private Iterator<Map.Entry<Integer, GameEntity>> iterEnt;
     public HashGame(){
         this("Untitled");
     }
     public HashGame(String gameName){
+        entities = new EntityTable();
         this.gameName = gameName;
         this.width = Toolkit.getDefaultToolkit().getScreenSize().width;
         this.height = Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -34,19 +42,15 @@ public class HashGame implements ActionListener {
     public void selectPlayers(){
         inGame = false;
         this.window = new GUI(this.gameName, width, height);
-        this.entities = new EntityTable();
+
         window.linkInputs(initializeInputs());
         window.showMainMenu();
     }
     public void setPaths() {
-        /*while(iterEnt.hasNext()){
-            GameEntity e = iterEnt.next().getValue();
-            if(e instanceof Player){
-                Player p = (Player) e;
-                p.decidePath(entities.getRoomCount(), entities);
-                System.out.println(p.getRoomKeys());
-            }
-        }*/
+        for(String key : playerKeys){
+            Player p = (Player) entities.get(key);
+            p.decidePath();
+        }
     }
     public void trapTreasures(){
         /*while(iterEnt.hasNext()){
@@ -60,26 +64,77 @@ public class HashGame implements ActionListener {
         this.inGame = true;
         createPlayers();
         initializeLevel();
+        simulate();
     }
     public void createPlayers(){
+        this.playerKeys = new String[window.getNumPlayersJoined()];
         for(int i = 0; i < window.getNumPlayersJoined(); i++){
             Player p = new Player("Player " + (i+1), 3);
+            playerKeys[i] = p.getName();
             p.setPlayerColor(GUI.playerColors[i]);
             entities.put(p.getName(), p);
         }
     }
-    public void movePlayer(int posX, int posY, int direction){
+    public boolean movePlayer(Player p, int elapsedMs){
+        int distY = 10;
+        int distX = 10;
+        switch(p.getStatus()) {
+            case "advancing":
+                distX = 10;
+                break;
+            case "entering":
 
+                break;
+            case "exiting":
+
+                break;
+            case "looting":
+                distY = 0;
+                break;
+        }
+        p.positionSprite(distX, distY);
+        return false;
     }
     public void initializeLevel(){
-        Room.maxSize = new Dimension (320, 160);
-        FloorPlan.setHall(new Dimension((int)(0.5*GUI.h), (int)(.4*GUI.h)));
-
-        this.level = new FloorPlan(entities);
+        this.level = new FloorPlan();
         level.buildLevel();
         trapTreasures();
         setPaths();
         window.showGameSession(level);
+    }
+    public void simulate(){
+        ranking = new LinkedList<String>();
+        fps = 60;
+        elapsedMs = 0;
+        bufferMs = 1000;///fps;
+        sim = new Timer(bufferMs, e -> {
+            int frameTimeMs = bufferMs;
+            for(String k : playerKeys) {
+                inGame = entities.get(k) != null;
+                if(inGame){
+                    break;
+                }
+            }
+            inGame = playerKeys.length > 0;
+            if (inGame) { // Check if all the Cars have finished the race.
+                for (String k : playerKeys) {
+                    Player p;
+                    if ( entities.get(k) != null) {
+                        p = (Player) entities.get(k);
+                        if (!movePlayer(p, frameTimeMs)){
+                            //TODO: RANKING SYSTEM
+                            /*for()
+                            ranking.add(p.getName());*/
+                        }
+                    }
+                }
+                this.window.advanceFrame(playerKeys);
+            }
+            bufferMs += 1000;
+            elapsedMs += bufferMs;
+            window.repaint();
+        });
+        sim.start();
     }
     public List<JButton> initializeInputs(){
         JButton addP1 = new JButton(), addP2 = new JButton(), addP3 = new JButton(), addP4 = new JButton(),
@@ -143,7 +198,6 @@ public class HashGame implements ActionListener {
                 break;
             case "new game":
                 selectPlayers();
-                window.wipeGameSession();
                 break;
             case "quit":
                 System.exit(0);

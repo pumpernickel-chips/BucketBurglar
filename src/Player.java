@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
@@ -9,7 +10,9 @@ import java.util.List;
  * @author Naomi Coakley
  */
 public class Player implements GameEntity{
+    private final static int out = 0, in = 1;
     private int currentScore;
+    private final int sideLength = (int) (24*(GUI.scale != null? GUI.scale : 1));
     private String name;
     private Rectangle2D playerSprite;
     private Color playerColor;
@@ -20,12 +23,14 @@ public class Player implements GameEntity{
     /**
      * {@code Deque} containing path for player to take
      */
-    private Deque<String> roomKeys;
+    private Deque<String> pathKeys;
+    private Deque<Point2D> nextRoomNodes;
     private Room currentRoom;
     /**
      * {@code true} if player is out of the game
      */
     private boolean lost;
+    private boolean advancing, entering, looting, exiting;
     /**
      * Default zero-args constructor, passes default player name, health, and an empty ArrayDeque
      * */
@@ -38,14 +43,19 @@ public class Player implements GameEntity{
      * @param health player health
      */
     public Player(String name, int health) {
-        this.playerSprite = new Rectangle2D.Double(0, 0, 10, 10);
+        this.playerSprite = new Rectangle2D.Double(0, 0, sideLength, sideLength);
         this.playerColor = new Color(142,140,140);
         this.currentScore = 0;// make final? maybe?
         this.name = name;
         this.health = health;
-        this.roomKeys = new ArrayDeque<String>();
+        this.pathKeys = new ArrayDeque<String>();
+        this.nextRoomNodes = new ArrayDeque<Point2D>();
         this.currentRoom = null;
         this.lost = false;
+        this.advancing = false;
+        this.entering = false;
+        this.looting = false;
+        this.exiting = false;
     }
     /**
      * Method for player to join game
@@ -65,20 +75,55 @@ public class Player implements GameEntity{
     /**
      * Method for the player to decide a path to move in/around the castle/rooms
      */
-    public void decidePath(int numberOfRooms, EntityTable allRooms){
-        List<String> keysAsArray = new ArrayList<String>(allRooms.keySet());
-        Collections.shuffle(keysAsArray);
-        roomKeys = new ArrayDeque<>();
-        for (int i = 0; i < Math.min(numberOfRooms, keysAsArray.size()); i++) {
-            roomKeys.add(keysAsArray.get(i));
+    public void decidePath(){
+        int targetNumRooms = 0;
+        switch(HashGame.entities.getPlayerCount()){
+            case 1 :
+                targetNumRooms = 8;
+                break;
+            case 2 :
+                targetNumRooms = 7;
+                break;
+            case 3 :
+                targetNumRooms = 5;
+                break;
+            case 4 :
+                targetNumRooms = 4;
+                break;
+        }
+        Random rand = new Random();
+        System.out.println(HashGame.entities.getRoomCount());
+        List<Integer> keys = new LinkedList<Integer>();
+        for(int k = 0; k < HashGame.entities.getRoomCount(); k++) keys.add(k);
+        for(int i = 0; i < HashGame.entities.getRoomCount()-targetNumRooms; i++){
+            System.out.println(keys.size());
+            keys.remove(rand.nextInt(keys.size()));
+        }
+        Collections.sort(keys);
+        pathKeys = new ArrayDeque<>();
+        for (int i = 0; i < Math.min(HashGame.entities.getRoomCount(), keys.size()); i++) {
+            pathKeys.add("Room " + keys.get(i));
+
         }
     }
     /**
      * Method to get next room from roomKeys {@code Deque<Integer>}
      * @return {@code roomKeys.poll}
      */
-    public String getNextRoom() {
-        return roomKeys.poll();
+    public Point2D getNextRoomNode() {
+        if(nextRoomNodes.isEmpty() && !pathKeys.isEmpty()){
+            setNextRoomNodes();
+        }else{
+            System.out.println("parsed int: " + Integer.parseInt(String.valueOf(this.getName().charAt(7))));
+            return new Point2D.Double(GUI.windowOrigin.getX()-(4*sideLength)+(sideLength*(1.5*Integer.parseInt(String.valueOf(this.getName().charAt(7))))), GUI.windowOrigin.getY()-(2*sideLength));
+        }
+        return nextRoomNodes.pop();
+    }
+    public void setNextRoomNodes(){
+        Room nextRoom = (Room) HashGame.entities.get(pathKeys.poll());
+        nextRoomNodes.push(nextRoom.getPathNodes()[0]);
+        nextRoomNodes.push(nextRoom.getPathNodes()[1]);
+        nextRoomNodes.push(nextRoom.getPathNodes()[0]);
     }
     /**
      * Method to assess damage to player based on value passed to {@code damage}
@@ -139,15 +184,15 @@ public class Player implements GameEntity{
      * Method returns {@code Deque} roomKeys containing the rooms
      * @return roomKeys
      */
-    public Deque<String> getRoomKeys() {
-        return roomKeys;
+    public Deque<String> getPathKeys() {
+        return pathKeys;
     }
     /**
      * Method to set {@code Deque} roomKeys
-     * @param roomKeys {@code Deque} roomKeys
+     * @param pathKeys {@code Deque} roomKeys
      */
-    public void setRoomKeys(Deque<String> roomKeys) {
-        this.roomKeys = roomKeys;
+    public void setPathKeys(Deque<String> pathKeys) {
+        this.pathKeys = pathKeys;
     }
     /**
      * Method to get room player in currently
@@ -181,7 +226,8 @@ public class Player implements GameEntity{
      * Returns player sprite
      * @return playerSprite
      */
-    public Rectangle2D getPlayerSprite() {
+    @Override
+    public Rectangle2D getSprite() {
         return playerSprite;
     }
     /**
@@ -206,14 +252,29 @@ public class Player implements GameEntity{
         this.lost = lost;
     }
     @Override
-    public void store() {
+    public boolean positionSprite(int distX, int distY) {
+        /*Point2D startingPoint = new Point2D.Double(this.getSprite().getX(), this.getSprite().getY());
+
+        if(startingPoint.distance(GUI.windowOrigin) == 0){
+
+        }
+        //below line just repositions the sprite 10 down and 10 right
+        this.setPlayerSprite(new Rectangle2D.Double(this.getSprite().getX()+distX, this.getSprite().getY()+distY, sideLength*GUI.scale, sideLength*GUI.scale));
+        */
+        this.setPlayerSprite(new Rectangle2D.Double(this.getNextRoomNode().getX(), this.getNextRoomNode().getY(), sideLength, sideLength));
+        return false;
     }
-    @Override
-    public Rectangle2D getSprite() {
-        return this.playerSprite;
-    }
-    @Override
-    public void remove() {
+    public String getStatus(){
+        if(advancing){
+            return "advancing";
+        }else if(entering){
+            return "entering";
+        }else if(looting){
+            return "looting";
+        }else if(exiting){
+            return "exiting";
+        }
+        return "";
     }
 }
 
