@@ -2,7 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
@@ -11,13 +10,18 @@ import java.util.List;
  */
 public class GUI extends JFrame{
     public static Dimension screenSize;
-    public static int h, w;
+    public static int w, h;
     public static Double scale;
     public static Point2D windowOrigin;
     private String name;
+    private static final int maxPlayers = 4;
     private boolean[] playerJoined;
-    private final static Font buttonFont = new Font("Hevetica", Font.BOLD, 18);
-    private JPanel main, title, select, menu, game, retry;
+    private boolean inGame;
+    private Font buttonFont;
+    private JPanel main, title, select, menu, game, scoreboard, retry;
+    private JLabel[] scores, healths;
+    private int[] scoreVals;
+    private double[] healthVals;
     private FloorPlan level;
     private JButton[] joinButtons;
     private JButton[] menuControls;
@@ -34,12 +38,14 @@ public class GUI extends JFrame{
     public GUI(String title, int width, int height){
         super(title);
         this.name = title;
+        this.inGame = true;
 
         w = width;
         h = height;
         screenSize = new Dimension(w, h);
-        scale = h*.00069;//graphics were scaled for a 1440p monitor, thus .00069 ≈ 1/1440 and multiplying users' monitor height by it outputs a factor by which to scale various dimensions by
-        System.out.println(screenSize);
+        scale = h*.00069;//graphics were originally scaled for a 1440p monitor, thus .00069 ≈ 1/1440 and multiplying users' monitor height by it outputs a factor by which to scale various dimensions by accurately regardless of screen size.
+        buttonFont = new Font("Hevetica", Font.BOLD, ((int) (20*scale)));
+        //System.out.println(screenSize);
         windowOrigin = new Point2D.Double(w*.5,h*.5);
 
         main = new JPanel(new GridBagLayout(), true);
@@ -188,16 +194,17 @@ public class GUI extends JFrame{
         return nB;
     }
     public void showGameSession(FloorPlan gameMap){
+        this.inGame = true;
         this.level = gameMap;
         this.retry = showNavigationBar(true);
         this.game = new JPanel(new GridBagLayout(), true);
         game.setBackground(intelliJGray);
         GridBagConstraints gC = new GridBagConstraints();
 
-        JPanel centerDisplay = new JPanel(new GridBagLayout(), true);
-        centerDisplay.setBackground(Color.BLACK);
-        centerDisplay.setBounds((int)FloorPlan.hallNodes[FloorPlan.NWc].getX()+48,(int)FloorPlan.hallNodes[FloorPlan.NWc].getY()+48,FloorPlan.getHall().width-96, FloorPlan.getHall().height-96);
-        //level.add(centerDisplay);
+        this.scoreboard = new JPanel(new GridBagLayout(), true);
+        scoreboard.setOpaque(false);
+        scoreboard.setBounds((int)FloorPlan.hallNodes[FloorPlan.NWc].getX()+48,(int)FloorPlan.hallNodes[FloorPlan.NWc].getY()+48,FloorPlan.getHall().width-96, FloorPlan.getHall().height-96);
+        level.add(scoreboard);
 
         gC.weightx = 1;
         gC.gridy = 0;
@@ -213,18 +220,88 @@ public class GUI extends JFrame{
         this.setContentPane(game);
         this.revalidate();
     }
+    public void updateScoreboard(int totalTimeElapsed, String[] playerKeys){
+        if(totalTimeElapsed < 30 && level.isSimulating()){
+            GridBagConstraints sbC = new GridBagConstraints(0, 0, 1, 1, 0.5, 0.125,
+                                                            GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                                                            new Insets (10,10,10,10), 25, 25);
+            scoreboard.setOpaque(false);
+            scores = new JLabel[maxPlayers];
+            healths = new JLabel[maxPlayers];
+            scoreVals = new int[]{0,0,0,0};
+            double max = ((Player) (HashGame.entities.get(playerKeys[0]))).getMaxHealth();
+            healthVals = new double[maxPlayers];
+            for(int i = 0; i < maxPlayers; i++){
+                Player p = i < playerKeys.length? (Player) HashGame.entities.get(playerKeys[i]) : null;
+                scores[i] = new JLabel(p != null? p.getName().toUpperCase() + ": ----" : "PLAYER NOT JOINED", SwingConstants.LEADING);
+                scores[i].setForeground(p != null? p.getPlayerColor() : new Color(43, 43, 44, 0));
+                scores[i].setFont(buttonFont.deriveFont(buttonFont.getSize()*1.8f));
+                scoreboard.add(scores[i], sbC);
+                sbC.gridy++;
+                healths[i] = new JLabel(p != null? "HEALTH: " + healthVals[i] + "%" : "PLAYER " + i + " IS DEAD", SwingConstants.LEADING);
+                healths[i].setForeground(p != null? p.getPlayerColor() : new Color(43, 43, 44, 0));
+                healths[i].setFont(buttonFont.deriveFont(buttonFont.getSize()*1.2f));
+                scoreboard.add(healths[i], sbC);
+                sbC.gridy++;
+            }
+        }
+        inGame = false;
+        for(int i = 0; i < maxPlayers; i++) {
+            Player p = i < playerKeys.length ? (Player) HashGame.entities.get(playerKeys[i]) : null;
+            if(p != null){
+                if(scoreVals[i] < p.getCurrentScore()) {
+                    scoreVals[i] += 11;
+                    if(scoreVals[i] > p.getCurrentScore()) scoreVals[i] = p.getCurrentScore();
+                }
+                if(healthVals[i] > p.getCurrentHealth()) {
+                    healthVals[i] -= 3;
+                    if(healthVals[i] < p.getCurrentHealth()) healthVals[i] = p.getCurrentHealth();
+                }
+                scores[i].setText(p.getName().toUpperCase() + ": " + (scoreVals[i] > 0? "$" + scoreVals[i] : "- - - -"));
+                healths[i].setText("HEALTH: " + ((int) (p.getCurrentHealth())) + "%");
+                if(p.getCurrentHealth() < (p.getMaxHealth()*.3)) healths[i].setForeground(Color.RED);
+                if(!p.isFinished()) inGame = true;
+            }else if(!scores[i].getText().equals("PLAYER NOT JOINED") && !healths[i].getText().equals("PLAYER " + i + " IS DEAD")){
+                scoreVals[i] *= .5;
+                healths[i].setForeground(Color.RED);
+                healths[i].setText("PLAYER " + (i+1) + " WAS KILLED BY TRAPS");
+            }
+        }
+        if(!inGame){
+            int bestScore = 0;
+            Deque<Integer> ranking = new ArrayDeque<>();
+            for(int i = 0; i < maxPlayers; i++) {
+                Player p = i < playerKeys.length ? (Player) HashGame.entities.get(playerKeys[i]) : null;
+                if (p != null) {
+                    bestScore = Math.max(p.getCurrentScore(), bestScore);
+                    if(bestScore == p.getCurrentScore()) ranking.push(i);
+                }
+            }
+            int winnerIndex = ranking.poll();
+            for(int i = 0; i < maxPlayers; i++) {
+                Player p = i < playerKeys.length ? (Player) HashGame.entities.get(playerKeys[i]) : null;
+                if (p != null && i == winnerIndex) {
+                    scores[i].setText(p.getName().toUpperCase() + " IS THE WINNER! ");
+                    healths[i].setText("ESCAPED WITH $" + scoreVals[i] + " IN TREASURE");
+                    healths[i].setForeground(p.getPlayerColor());
+                }else{
+                    scores[i].setForeground(new Color(43, 43, 44, 0));
+                    if(p != null){
+                        healths[i].setForeground(p.getPlayerColor());
+                        healths[i].setText(p.getName().toUpperCase() + " ESCAPED WITH $" + scoreVals[i] + " IN TREASURE");
+                    }
+                }
+            }
+        }
+        revalidate();
+        repaint();
+    }
     public void advanceFrame(String[] playerKeys){
-        Deque<String> keys = new ArrayDeque<String>(Arrays.asList(playerKeys));
-        for(String key : playerKeys) keys.push(key);
+        Deque<String> keys = new ArrayDeque<String>();
+        for(String key : playerKeys) if ((Player)(HashGame.entities.get(key)) != null) keys.push(key);
         level.setPlayerKeys(keys);
         level.setSimulating(true);
         repaint();
-    }
-    public boolean isPlayerJoined() {
-        if(playerJoined[0]){
-            return true;
-        }
-        return false;
     }
     public int getNumPlayersJoined(){
         int playerCount = 0;

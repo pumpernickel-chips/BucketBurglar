@@ -1,5 +1,3 @@
-import com.sun.glass.ui.Clipboard;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -21,15 +19,13 @@ public class HashGame implements ActionListener {
     public static EntityTable entities;
     private FloorPlan level;
     private Timer sim;
-    private int elapsedMs, bufferMs, fps;
-    private List<String> ranking;
+    private int elapsedMs, frameTimeMs, fps;
 
     //private Iterator<Map.Entry<Integer, GameEntity>> iterEnt;
     public HashGame(){
         this("Untitled");
     }
     public HashGame(String gameName){
-        entities = new EntityTable();
         this.gameName = gameName;
         this.width = Toolkit.getDefaultToolkit().getScreenSize().width;
         this.height = Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -40,6 +36,7 @@ public class HashGame implements ActionListener {
             HashGame test = new HashGame(gameName);
     }
     public void selectPlayers(){
+        entities = new EntityTable();
         inGame = false;
         this.window = new GUI(this.gameName, width, height);
 
@@ -50,65 +47,66 @@ public class HashGame implements ActionListener {
         for(String key : playerKeys){
             Player p = (Player) entities.get(key);
             p.decidePath();
+            p.setNextRoomNodes();
         }
     }
-    public void trapTreasures(){
-        /*while(iterEnt.hasNext()){
-            GameEntity t = iterEnt.next().getValue();
-            if(t instanceof Treasure){
-                ((Treasure) t).setBoobyTrapped(true);//method to be written in Treasure
-            }
-        }*/
+    public void setBoobyTraps(){
+        Random trap = new Random();
+        int trapCountInRoom;
+        for (int i = 0; i < entities.getRoomCount(); i++){
+            trapCountInRoom = trap.nextInt((int)((((Room) entities.get("Room " + i)).getLootKeys().size())*.5));
+            do {
+                ((Treasure) (entities.get("Room " + i + ", Treasure " + (trap.nextInt(((Room) entities.get("Room " + i)).getLootKeys().size()))))).setBoobyTrapped(true);
+                trapCountInRoom--;
+            } while (trapCountInRoom >= 0);
+        }
     }
     public void startGame(){
         this.inGame = true;
-        createPlayers();
         initializeLevel();
+        createPlayers();
+        setPaths();
+        setBoobyTraps();
         simulate();
     }
     public void createPlayers(){
         this.playerKeys = new String[window.getNumPlayersJoined()];
-        for(int i = 0; i < window.getNumPlayersJoined(); i++){
-            Player p = new Player("Player " + (i+1), 3);
+        for (int i = 0; i < window.getNumPlayersJoined(); i++) {
+            Player p = new Player("Player " + (i+1), 100);
             playerKeys[i] = p.getName();
             p.setPlayerColor(GUI.playerColors[i]);
             entities.put(p.getName(), p);
         }
     }
-    public boolean movePlayer(Player p, int elapsedMs){
-        int distY = 10;
-        int distX = 10;
-        switch(p.getStatus()) {
-            case "advancing":
-                distX = 10;
-                break;
-            case "entering":
-
-                break;
-            case "exiting":
-
-                break;
-            case "looting":
-                distY = 0;
-                break;
+    public boolean playerAction(Player p){
+        if(!p.isLooting()){
+            double interval = p.getPlayerStepInterval();
+            p.setPlayerStepInterval(interval + (interval < 12? .25 : 0));
+            if (p.moveSprite(p.getPlayerStepInterval())) {
+                if(!p.isFinished()){
+                    p.setTargetNode();
+                }
+            }
+        }else{
+            if (p.collectLoot()) {
+                p.setLooting(false);
+                p.setPlayerStepInterval(.0);
+            }
         }
-        p.positionSprite(distX, distY);
-        return false;
+        return p.hasLost();
     }
     public void initializeLevel(){
         this.level = new FloorPlan();
         level.buildLevel();
-        trapTreasures();
-        setPaths();
         window.showGameSession(level);
     }
     public void simulate(){
-        ranking = new LinkedList<String>();
+        level.repaint();
         fps = 60;
         elapsedMs = 0;
-        bufferMs = 1000;///fps;
-        sim = new Timer(bufferMs, e -> {
-            int frameTimeMs = bufferMs;
+        frameTimeMs = 1000/fps;
+
+        sim = new Timer(frameTimeMs, e -> {
             for(String k : playerKeys) {
                 inGame = entities.get(k) != null;
                 if(inGame){
@@ -116,22 +114,23 @@ public class HashGame implements ActionListener {
                 }
             }
             inGame = playerKeys.length > 0;
-            if (inGame) { // Check if all the Cars have finished the race.
+            if (inGame) {
+                int playersMoving = 0;
                 for (String k : playerKeys) {
                     Player p;
-                    if ( entities.get(k) != null) {
+                    playersMoving++;
+                    if ((entities.get(k) != null) && (playersMoving <= (1 + ((elapsedMs / fps)*playersMoving)) )) {
                         p = (Player) entities.get(k);
-                        if (!movePlayer(p, frameTimeMs)){
-                            //TODO: RANKING SYSTEM
-                            /*for()
-                            ranking.add(p.getName());*/
+                        if (playerAction(p)){
+                            level.addBloodSprites(p.getSprite().getX(), p.getSprite().getY());
+                            entities.remove(p.getName());
                         }
                     }
                 }
                 this.window.advanceFrame(playerKeys);
             }
-            bufferMs += 1000;
-            elapsedMs += bufferMs;
+            elapsedMs += frameTimeMs;
+            window.updateScoreboard(elapsedMs, playerKeys);
             window.repaint();
         });
         sim.start();
@@ -197,6 +196,10 @@ public class HashGame implements ActionListener {
                 }
                 break;
             case "new game":
+
+                sim.stop();
+                entities.clear();
+                System.gc();
                 selectPlayers();
                 break;
             case "quit":

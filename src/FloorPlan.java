@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
@@ -13,28 +14,29 @@ public class FloorPlan extends JPanel {
     private static Dimension hall;
     public static Point2D[] hallNodes;
     public static Point2D[] pathNodes;
-    public static int NEc = 0, Nv = 1, NWc = 2, NWh = 3, SWh = 4, SWc = 5, Sv = 6, SEc = 7, SEh = 8, NEh = 9;
+    public static int NEc = 0, Nv = 1, NWc = 2, NWh = 3, SWh = 4, SWc = 5, Sv = 6, SEc = 7, SEh = 8, NEh = 9, exit = 10;
     private static Point2D[] roomPositions;
     private boolean ready;
+    private int trapCount;
     private List<String> roomKeys;
     private Deque<String> playerKeys;
     private Rectangle2D[] hallSprites;
+    private List<Ellipse2D> bloodSprites;
+    private static final Color bloodRed = new Color(148, 29, 29, 195);
     private boolean simulating;
 
-    /*public FloorPlan(){
-        this();
-    }*/
-    //TODO: come up with a parameter
     public FloorPlan(){
         super(null, true);
         hWidth = 48*GUI.scale;
         hOffset = 128*GUI.scale;
-        setHall(new Dimension((int)(.5*GUI.h), (int)(.4*GUI.h)));
+        setHall(new Dimension((int)(.48*GUI.h), (int)(.36*GUI.h)));
         this.setBackground(GUI.intelliJGray);
         this.ready = false;
         this.roomKeys = new LinkedList<>();
         this.playerKeys = new ArrayDeque<String>();
+        bloodSprites = new ArrayList<Ellipse2D>();
         this.simulating = false;
+        this.trapCount = 0;
     }
     public void buildLevel(){
         arrangeHallways();
@@ -47,11 +49,11 @@ public class FloorPlan extends JPanel {
         for(int i = 0; i < rooms; i++) {
             Room room = new Room((int) roomPositions[i].getX(),(int) roomPositions[i].getY(),
                     (int) ((256-rand.nextInt(64))*GUI.scale), (int) ((200-rand.nextInt(64))* GUI.scale), i, true);
+            room.generateLoot();
             String key = "Room " + i;
             HashGame.entities.put(key, (Room) room);
             roomKeys.add(key);
-            System.out.println(key + ": " + room.getRoomSize().width +"x"+ room.getRoomSize().height);
-
+            //System.out.println(key + ": " + room.getRoomSize().width +"x"+ room.getRoomSize().height);
         }
     }
     public void arrangeHallways(){
@@ -89,7 +91,9 @@ public class FloorPlan extends JPanel {
             // SE horizontal
             new Rectangle2D.Double(hallNodes[SEc].getX(), hallNodes[SEc].getY()-(184*GUI.scale),hOffset,hWidth),
             // NE horizontal
-            new Rectangle2D.Double(hallNodes[NEc].getX(), hallNodes[NEc].getY()+(136*GUI.scale),hOffset,hWidth)
+            new Rectangle2D.Double(hallNodes[NEc].getX(), hallNodes[NEc].getY()+(136*GUI.scale),hOffset,hWidth),
+            // exit horizontal
+            new Rectangle2D.Double(hallNodes[NEc].getX(), hallNodes[NEc].getY(),GUI.w-hallNodes[NEc].getX(),hWidth)
         };
     }
     public static Dimension getHall() {
@@ -118,7 +122,9 @@ public class FloorPlan extends JPanel {
                 //SEh
                 new Point2D.Double(GUI.windowOrigin.getX()+(hall.width*.5), GUI.windowOrigin.getY()+(hall.height*.5)-(184*GUI.scale)),
                 //NEh
-                new Point2D.Double(GUI.windowOrigin.getX()+(hall.width*.5), GUI.windowOrigin.getY()-(hall.height*.5)+136*(GUI.scale))
+                new Point2D.Double(GUI.windowOrigin.getX()+(hall.width*.5), GUI.windowOrigin.getY()-(hall.height*.5)+136*(GUI.scale)),
+                //exit
+                new Point2D.Double(GUI.windowOrigin.getX()+(hall.width*.5), GUI.windowOrigin.getY()-(hall.height*.5))
             };
             FloorPlan.pathNodes = new Point2D[]{
                     //NEc
@@ -140,7 +146,9 @@ public class FloorPlan extends JPanel {
                     //SEh
                     new Point2D.Double(hallNodes[SEh].getX()-(hWidth*.75), hallNodes[SEh].getY()+(hWidth*.25)),
                     //NEh
-                    new Point2D.Double(hallNodes[NEh].getX()-(hWidth*.75), hallNodes[NEh].getY()+(hWidth*.25))
+                    new Point2D.Double(hallNodes[NEh].getX()-(hWidth*.75), hallNodes[NEh].getY()+(hWidth*.25)),
+                    //exit
+                    new Point2D.Double(hallNodes[NEc].getX()-(hWidth*.75)+(hOffset*2), hallNodes[NEc].getY()+(hWidth*.25))
             };
             roomPositions = new Point2D[]{
                     //top
@@ -163,11 +171,12 @@ public class FloorPlan extends JPanel {
             }*/
         }
     }
-    public List<String> getRoomKeys() {
-        return roomKeys;
-    }
-    public void setRoomKeys(List<String> roomKeys) {
-        this.roomKeys = roomKeys;
+    public void addBloodSprites(double x, double y){
+        x -= 16*GUI.scale;
+        y -= 16*GUI.scale;
+        for(int i = 0; i < 64; i++){
+            bloodSprites.add(new Ellipse2D.Double(x+(Math.random()*(56*GUI.scale)), y+(Math.random()*(56*GUI.scale)), (2+(Math.random()*6))*GUI.scale, (2+(Math.random()*6))*GUI.scale));
+        }
     }
     public Deque<String> getPlayerKeys() {
         return playerKeys;
@@ -181,7 +190,6 @@ public class FloorPlan extends JPanel {
     public void setReady(boolean ready) {
         this.ready = ready;
     }
-
     public boolean isSimulating() {
         return simulating;
     }
@@ -192,10 +200,25 @@ public class FloorPlan extends JPanel {
     public void paintComponent(Graphics g){
         Graphics2D gx = (Graphics2D) g;
         super.paintComponent(gx);
-        gx.setColor(Color.LIGHT_GRAY);//don't remove
-        for(Rectangle2D corridor : hallSprites) gx.fill(corridor);
+        gx.setColor(Color.LIGHT_GRAY);
+        for(Rectangle2D corridor : hallSprites){
+            if(!corridor.equals(hallSprites[14])){
+                gx.fill(corridor);
+            }
+        }
+        gx.setPaint(new GradientPaint((float) (hallSprites[14].getX()), (float) hallSprites[14].getCenterY(), Color.LIGHT_GRAY, ((float) (GUI.w-(hallSprites[14].getWidth()*.3))), (float) hallSprites[14].getCenterY(), GUI.intelliJGray));
+        gx.fill(hallSprites[14]);
+        //gx.setColor(Color.LIGHT_GRAY);
         for(String key : roomKeys){
+
+            gx.setColor(Color.LIGHT_GRAY);
             gx.fill(((Room)(HashGame.entities.get(key))).getSprite());
+
+            gx.setColor(Treasure.intelliYellow);
+            for(String lootKey : ((Room)(HashGame.entities.get(key))).getLootKeys()){
+                gx.fill(((Treasure)(HashGame.entities.get(lootKey))).getSprite());
+            }
+            //shows color-coded hall, room, and path nodes
             /*gx.setColor(Color.GREEN);
             gx.fill(new Rectangle2D.Double((((Room)(entities.get(key))).getPathNodes()[0].getX()), ((Room)(entities.get(key))).getPathNodes()[0].getY(), 24, 24));
             gx.setColor(Color.BLUE);
@@ -211,12 +234,19 @@ public class FloorPlan extends JPanel {
         }*/
 
         if(isReady() && isSimulating()){
+            gx.setColor(bloodRed);
+            for(Ellipse2D bloodParticle : bloodSprites){
+                gx.fill(bloodParticle);
+            }
             for(String key : getPlayerKeys()){
                 Player sprite = (Player) HashGame.entities.get(key);
+                if(sprite.isLooting() && !sprite.getLootInProgress().equals("")){
+                    gx.setColor(((Treasure) (HashGame.entities.get(sprite.getLootInProgress()))).isBoobyTrapped()? new Color(Color.HSBtoRGB((float) Math.random(), 1f, 1f)) : Treasure.intelliYellow);
+                    gx.fill(((Treasure) (HashGame.entities.get(sprite.getLootInProgress()))).getSprite());
+                }
                 gx.setColor(sprite.getPlayerColor());
                 gx.fill(sprite.getSprite());
             }
         }
-
     }
 }
