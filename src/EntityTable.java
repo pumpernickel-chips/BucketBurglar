@@ -1,6 +1,8 @@
 import java.util.HashMap;
 /**
  * Inherits HashMap for the purpose of using its functions while keeping count of the distinct types of GameEntities.
+ * @author Naomi Coakley
+ * @author John Beaudry
  * */
 public class EntityTable extends HashMap<String, GameEntity>{
     private int roomCount, playerCount, treasureCount, levelTrapCount;
