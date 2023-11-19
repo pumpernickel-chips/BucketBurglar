@@ -11,11 +11,10 @@ import java.util.List;
  * @author Naomi Coakley
  */
 public class Player implements GameEntity{
-    private final static int out = 0, in = 1;
     private int playerNum, currentScore, targetLoot;
     private double playerStepInterval, lootStepInterval = .0;
     private final int sideLength = (int) (24*(GUI.scale != null? GUI.scale : 1));
-    private boolean finished, approachingExit, looting;
+    private boolean approachingExit, looting;
     private String playerName;
     private Rectangle2D playerSprite;
     private Point2D targetNode, roomCenter;
@@ -58,7 +57,6 @@ public class Player implements GameEntity{
         this.lost = false;
         this.playerStepInterval = .0;
         this.lootInProgress = "";
-        this.finished = false;
         this.playerSprite = new Rectangle2D.Double(FloorPlan.pathNodes[FloorPlan.exit].getX()+((sideLength*1.6)*playerNum), FloorPlan.pathNodes[FloorPlan.exit].getY(), sideLength, sideLength);
         this.targetNode = new Point2D.Double(playerSprite.getX(), playerSprite.getY());
         this.playerColor = new Color(142,140,140);

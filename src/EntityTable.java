@@ -5,11 +5,8 @@ import java.util.HashMap;
  * @author John Beaudry
  * */
 public class EntityTable extends HashMap<String, GameEntity>{
-    private int roomCount, playerCount, treasureCount, levelTrapCount;
+    private int roomCount, playerCount, treasureCount;
     public EntityTable(){
-        this(false);
-    }
-    public EntityTable(boolean gameStarted){
         super();
         this.roomCount = 0;
         this.playerCount = 0;

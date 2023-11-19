@@ -18,14 +18,12 @@ public class FloorPlan extends JPanel {
     public static Point2D[] pathNodes;
     public static int NEc = 0, Nv = 1, NWc = 2, NWh = 3, SWh = 4, SWc = 5, Sv = 6, SEc = 7, SEh = 8, NEh = 9, exit = 10;
     private static Point2D[] roomPositions;
-    private boolean ready;
-    private int trapCount;
+    private boolean ready, simulating;
     private List<String> roomKeys;
     private Deque<String> playerKeys;
     private Rectangle2D[] hallSprites;
     private List<Ellipse2D> bloodSprites;
     private static final Color bloodRed = new Color(168, 24, 24, 148);
-    private boolean simulating;
     /**
      * Default zero-args constructor
      * */
@@ -40,7 +38,6 @@ public class FloorPlan extends JPanel {
         this.playerKeys = new ArrayDeque<String>();
         bloodSprites = new ArrayList<Ellipse2D>();
         this.simulating = false;
-        this.trapCount = 0;
     }
     /**
      * Calls individual methods to arrange co-dependent categories of graphical elements and place them on-screen.
