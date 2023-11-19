@@ -3,44 +3,46 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
-
 /**
+ * An implementation of GameEntity that represents a Room and its contents, such as position, {@code Treasure}, and paths.
  * @author Yuliia Synytska
  * @author John Beaudry
  */
 public class Room implements GameEntity{
     private Dimension roomSize;
-    private boolean isEmpty;
     private int roomNumber;
-
     private Rectangle2D roomSprite;
-    private Point2D[] pathNodes;
-    /** The absolute coordinates at the center of the {@code Room} */
-    private Point2D offsetOrigin;
+    /** The absolute coordinates at the top-left corner of the {@code Room}*/
     private Point2D roomPosition;
+    /** The absolute coordinates at the center of the {@code Room}, offset slightly to align with the entry corridor */
+    private Point2D offsetOrigin;
+    /** The absolute coordinates of the Room's entrance and its offsetOrigin */
+    private Point2D[] pathNodes;
     private Deque<String> lootKeys;
     /**
-     * Default zero-args constructor, passes default title to complete constructor
+     * Default zero-args constructor. Passes default position, dimensions, and node to complete constructor.
      * */
     public Room() {
-        this(256, 256, 128, 128, 0, true);
+        this(256, 256, 128, 128, 0);
     }
     /**
-     * Complete constructor
+     * Parameterized constructor
      * @param posX x-axis positioning
      * @param posY y-axis positioning
      * @param width room width
      * @param height room height
-     * @param isEmpty does room have player in it
+     * @param node room number
      */
-     public Room(int posX, int posY, int width, int height, int node, boolean isEmpty) {
+     public Room(int posX, int posY, int width, int height, int node) {
         this.roomSize = new Dimension(width, height);
-        this.isEmpty = isEmpty;
         this.roomPosition = new Point2D.Double(posX, posY);
         this.roomSprite = new Rectangle2D.Double(roomPosition.getX(), roomPosition.getY(), roomSize.width, roomSize.height);
         this.offsetOrigin = new Point2D.Double(this.roomSprite.getCenterX()-12, this.roomSprite.getCenterY()-12);
         this.roomNumber = node;
         this.lootKeys = new ArrayDeque<>();
+        /*
+         * these conditionals determine whether to align the offsetOrigin by the x- or y-value of the entrance
+         */
         boolean vertical = node == 0 || node == 1 || node == 2 || node == 5 || node == 6 || node == 7;
         boolean horizontal = node == 3 || node == 4 || node == 8 || node == 9;
         this.offsetOrigin = new Point2D.Double( vertical? FloorPlan.pathNodes[node].getX() : this.roomSprite.getCenterX()-12,
@@ -48,7 +50,7 @@ public class Room implements GameEntity{
         this.pathNodes = new Point2D[]{FloorPlan.pathNodes[node], offsetOrigin};
     }
     /**
-     * Method to generate treasure
+     * Method to generate treasure in random quantity (max 12) with shuffled positions.
      */
     public void generateLoot() {
         Random rand = new Random();
@@ -83,45 +85,26 @@ public class Room implements GameEntity{
         } while (keyIndex < maxLoot);
     }
     /**
-     * Returns size of room
-     * @return roomSize
-     */
-    public Dimension getRoomSize() {
-        return roomSize;
-    }
-    /**
-     * Sets size of room
-     * @param roomSize size of room
-     */
-    public void setRoomSize(Dimension roomSize) {
-        this.roomSize = roomSize;
-    }
-    /**
-     * Returns if room is empty
-     * @return
-     */
-    public boolean isEmpty() {
-        return isEmpty;
-    }
-    /**
-     * Sets whether room is empty
-     * @param empty
-     */
-    public void setEmpty(boolean empty) {
-        isEmpty = empty;
-    }
-    /**
-     * Returns treasure
-     * @return {@link Treasure}
+     * Accesses keys to all Treasures in this Room that are stored in the EntityTable
+     * @return an ArrayDeque of String-type keys
      */
     public Deque<String> getLootKeys() {
         return lootKeys;
     }
+    /**
+     * Allows a Player "claim" a Treasure before collecting it to prevent other Players from accessing it (and throwing
+     * errors). It either takes the first or last lootKey and puts it back if claimed before returning and empty String.
+     * @return key to a random Treasure in the Room
+     * */
     public String claimRandomLootKey(){
         if(!lootKeys.isEmpty()) {
             String key = ((new Random().nextBoolean()) ? lootKeys.pollLast() : lootKeys.poll());
-            ((Treasure) (HashGame.entities.get(key))).setClaimed(true);
-            return key;
+            if(!((Treasure) (HashGame.entities.get(key))).isClaimed()){
+                ((Treasure) (HashGame.entities.get(key))).setClaimed(true);
+                return key;
+            }else{
+                lootKeys.push(key);
+            }
         }
         return "";
     }
@@ -131,28 +114,8 @@ public class Room implements GameEntity{
     public int getRoomNumber() {
         return roomNumber;
     }
-    /**
-     * Returns origin
-     * @return origin
-     */
-    public Point2D getOffsetOrigin() {
-        return offsetOrigin;
-    }
-    /**
-     * Sets origin
-     * @param offsetOrigin {@code Point2D}
-     */
-    public void setOffsetOrigin(Point2D offsetOrigin) {
-        this.offsetOrigin = offsetOrigin;
-    }
     public Point2D[] getPathNodes() {
         return pathNodes;
-    }
-    public void setPathNodes(Point2D[] pathNodes) {
-        this.pathNodes = pathNodes;
-    }
-    public void setRoomSprite(Rectangle2D roomSprite) {
-        this.roomSprite = roomSprite;
     }
     @Override
     public boolean moveSprite(double stepInterval) {
@@ -165,21 +128,22 @@ public class Room implements GameEntity{
     /**
      * Overridden {@code equals()} method
      * @param o object to compare
-     * @return returns result true or false
+     * @return returns true or false
      */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Room)) return false;
         Room room = (Room) o;
-        return isEmpty == room.isEmpty && Objects.equals(roomSize, room.roomSize) && Objects.equals(offsetOrigin, room.offsetOrigin);
+        return Objects.equals(roomSize, room.roomSize) && Objects.equals(offsetOrigin, room.offsetOrigin);
     }
     /**
-     * Overridden {@code hashCode} method
+     * Overridden {@code hashCode} method. Uses {@code roomSize}, {@code pathNodes}, and {@code offsetOrigin} since
+     * these attributes are unique and will never change during gameplay.
      * @return {@code int} hash
      */
     @Override
     public int hashCode() {
-        return Objects.hash(roomSize, isEmpty, offsetOrigin);
+        return Objects.hash(roomSize, Arrays.hashCode(pathNodes), offsetOrigin);
     }
 }

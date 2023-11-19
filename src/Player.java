@@ -5,17 +5,18 @@ import java.util.*;
 import java.util.List;
 
 /**
+ * An implementation of GameEntity that represents a Player and it's statuses, such as position, score, and health.
  * @author Yuliia Synytska
  * @author John Beaudry
  * @author Naomi Coakley
  */
 public class Player implements GameEntity{
     private final static int out = 0, in = 1;
-    private int currentScore, targetLoot, lootFrames;
-    private double playerStepInterval, lootStepInterval;
+    private int playerNum, currentScore, targetLoot;
+    private double playerStepInterval, lootStepInterval = .0;
     private final int sideLength = (int) (24*(GUI.scale != null? GUI.scale : 1));
     private boolean finished, approachingExit, looting;
-    private String name;
+    private String playerName;
     private Rectangle2D playerSprite;
     private Point2D targetNode, roomCenter;
     private Color playerColor;
@@ -36,23 +37,19 @@ public class Player implements GameEntity{
      */
     private boolean lost;
     /**
-     * Default zero-args constructor, passes default player name, health, and an empty ArrayDeque
+     * Default zero-args constructor, passes default player number and maxHealth
      * */
     public Player() {
-        this("Player 1", 100);
+        this(1, 100);
     }
     /**
      * Complete constructor
-     * @param name player name
+     * @param playerNum int to derive player name from (ex: Player 1)
      * @param maxHealth player health
      */
-    public Player(String name, int maxHealth) {
-        this.playerSprite = new Rectangle2D.Double(FloorPlan.pathNodes[10].getX(), FloorPlan.pathNodes[10].getY(), sideLength, sideLength);
-        this.targetNode = new Point2D.Double(playerSprite.getX(), playerSprite.getY());
-        this.playerColor = new Color(142,140,140);
-        this.currentScore = 0;
-        this.approachingExit = false;
-        this.name = name;
+    public Player(int playerNum, int maxHealth) {
+        this.playerNum = playerNum;
+        this.playerName = "Player "  + this.playerNum;
         this.maxHealth = maxHealth;
         this.currentHealth = this.maxHealth;
         this.pathKeys = new ArrayDeque<String>();
@@ -60,17 +57,20 @@ public class Player implements GameEntity{
         this.currentRoom = null;
         this.lost = false;
         this.playerStepInterval = .0;
-        this.lootStepInterval = .0;
-        this.lootFrames = 0;
         this.lootInProgress = "";
         this.finished = false;
+        this.playerSprite = new Rectangle2D.Double(FloorPlan.pathNodes[FloorPlan.exit].getX()+((sideLength*1.6)*playerNum), FloorPlan.pathNodes[FloorPlan.exit].getY(), sideLength, sideLength);
+        this.targetNode = new Point2D.Double(playerSprite.getX(), playerSprite.getY());
+        this.playerColor = new Color(142,140,140);
+        this.currentScore = 0;
+        this.approachingExit = false;
     }
     /**
      * Method to get name of Player
      * @return name
      */
-    public String getName(){
-        return name;
+    public String getPlayerName(){
+        return playerName;
     }
     /**
      * Method for the player to decide a path to move in/around the castle/rooms
@@ -105,7 +105,7 @@ public class Player implements GameEntity{
             pathKeys.add("Room " + keys.get(i));
         }
         nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.NEc]);
-        System.out.println(name.toUpperCase() + " pathKeys:\n" + pathKeys);
+        System.out.println(playerName.toUpperCase() + " pathKeys:\n" + pathKeys);
     }
     /**
      * Method to assess damage to player based on value passed to {@code damage}
@@ -124,19 +124,15 @@ public class Player implements GameEntity{
      */
     public boolean collectLoot() {
         if (looting && currentRoom != null && targetLoot > 0) {
-            if (lootInProgress.equals("")){
-                if (currentRoom.getLootKeys().size() > 0) {
-                    setLootInProgress(getCurrentRoom().getLootKeys().poll());
-                    lootStepInterval = .0;
-                } else {
-                    return true;
-                }
+            while (lootInProgress.equals("")) if (currentRoom.getLootKeys().size() > 0) {
+                setLootInProgress(getCurrentRoom().claimRandomLootKey());
+                lootStepInterval = .0;
+            } else {
+                return true;
             }
             ((Treasure)(HashGame.entities.get(lootInProgress))).setTargetPlayer(new Point2D.Double(getSprite().getX(), getSprite().getY()));
-            this.lootStepInterval += (lootStepInterval < 5 ? 0.64 : 0);
-            lootFrames++;
+            this.lootStepInterval += (lootStepInterval < 12 ? .8 : .0);
             if (((Treasure) (HashGame.entities.get(lootInProgress))).moveSprite(lootStepInterval)) {
-                lootFrames = 0;
                 if(((Treasure) (HashGame.entities.get(lootInProgress))).isBoobyTrapped()) {
                     currentRoom.removeLootKey(lootInProgress);
                     HashGame.entities.remove(lootInProgress);
@@ -151,22 +147,18 @@ public class Player implements GameEntity{
                     currentRoom.removeLootKey(lootInProgress);
                     HashGame.entities.remove(lootInProgress);
                     lootInProgress = "";
-                    currentScore += 100;
+                    currentScore += 1000;
                     lootStepInterval = .0;
                     targetLoot--;
                 }
             }
         }else{
             if(targetLoot == 0){
-                lootFrames = 0;
                 lootStepInterval = .0;
                 return true;
             }
         }
         return false;
-    }
-    public void setLootStepInterval(double interval){
-        this.lootStepInterval = interval;
     }
     /**
      * Returns this players current score
@@ -175,19 +167,8 @@ public class Player implements GameEntity{
     public int getCurrentScore() {
         return currentScore;
     }
-    /**
-     * Method to set current score
-     * @param currentScore current score
-     */
-    public void setCurrentScore(int currentScore) {
-        this.currentScore = currentScore;
-    }
-    /**
-     * Method to set name of player
-     * @param name player name
-     */
-    public void setName(String name) {
-        this.name = name;
+    public int getPlayerNum() {
+        return playerNum;
     }
     public double getMaxHealth() {
         return maxHealth;
@@ -238,6 +219,9 @@ public class Player implements GameEntity{
     public boolean isFinished() {
         return new Point2D.Double(getSprite().getX(), getSprite().getY()).equals(new Point2D.Double(GUI.screenSize.width+30, getSprite().getY()));
     }
+    public boolean isApproachingExit() {
+        return approachingExit;
+    }
     /**
      * Returns if player is still in game
      * @return lost
@@ -281,9 +265,6 @@ public class Player implements GameEntity{
     public void setLootInProgress(String lootKey) {
         this.lootInProgress = lootKey;
     }
-    public boolean isApproachingExit() {
-        return approachingExit;
-    }
     public void setTargetNode() {
         if(nextRoomNodes.isEmpty() && !approachingExit){
             this.approachingExit = setNextRoomNodes();
@@ -305,33 +286,36 @@ public class Player implements GameEntity{
             currentRoom = (Room) HashGame.entities.get(pathKeys.poll());
             int last = previousRoom == null? -1 : previousRoom.getRoomNumber();
             int next = currentRoom.getRoomNumber();
-            if (next > 2 /*&& next < 5 */ && last < 2) {
+            if (next > 2 && last < 2) {
                 nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.NWc]);
-                System.out.println(name.toUpperCase() + " to NWc after " + (last < 0? "entering game" : "Room " + last));
+                System.out.println(playerName.toUpperCase() + " to NWc after " + (last < 0? "entering game" : "Room " + last));
             }
-            if (next > 4 /*&& next < 8 */ && last < 5) {
+            if (next > 4 && last < 5) {
                 nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.SWc]);
-                System.out.println(name.toUpperCase() + " to SWc after " + (last < 0? "entering game" : "Room " + last));
+                System.out.println(playerName.toUpperCase() + " to SWc after " + (last < 0? "entering game" : "Room " + last));
             }
-            if (next > 7 /*&& next <= 10 */ && last < 8) {
+            if (next > 7 && last < 8) {
                 nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.SEc]);
-                System.out.println(name.toUpperCase() + " to SEc after " + (last < 0? "entering game" : "Room " + last));
+                System.out.println(playerName.toUpperCase() + " to SEc after " + (last < 0? "entering game" : "Room " + last));
             }
-            /*if (playerSprite.getX() == FloorPlan.pathNodes[FloorPlan.exit].getX() && playerSprite.getY() == FloorPlan.pathNodes[FloorPlan.exit].getY()) {
-                nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.NEc]);
-                System.out.println(name.toUpperCase() + " to exit after " + (last < 0? "entering game" : "Room " + last));
-            }*/
             nextRoomNodes.addLast(currentRoom.getPathNodes()[0]);
             nextRoomNodes.addLast(currentRoom.getPathNodes()[1]);
             nextRoomNodes.addLast(currentRoom.getPathNodes()[0]);
             roomCenter = currentRoom.getPathNodes()[1];
-
-        /*} else if (currentRoom == null && !pathKeys.isEmpty()) {
-            currentRoom = (Room) HashGame.entities.get(pathKeys.poll());
-            nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.NEc]);
-            }*/
-
         }else {
+            int last = currentRoom.getRoomNumber();
+            if (last < 2) {
+                nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.NWc]);
+                //System.out.println(name.toUpperCase() + " to NWc after " + (last < 0? "entering game" : "Room " + last));
+            }
+            if (last < 5) {
+                nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.SWc]);
+                //System.out.println(name.toUpperCase() + " to SWc after " + (last < 0? "entering game" : "Room " + last));
+            }
+            if (last < 8) {
+                nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.SEc]);
+                //System.out.println(name.toUpperCase() + " to SEc after " + (last < 0? "entering game" : "Room " + last));
+            }
             nextRoomNodes.addLast(FloorPlan.pathNodes[FloorPlan.NEc]);
             nextRoomNodes.addLast(new Point2D.Double(FloorPlan.pathNodes[FloorPlan.exit].getX(), FloorPlan.pathNodes[FloorPlan.exit].getY()));
             return true;
@@ -365,6 +349,17 @@ public class Player implements GameEntity{
         this.setPlayerSprite(new Rectangle2D.Double(destX, destY, sideLength, sideLength));
 
         return arrived;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Player)) return false;
+        Player player = (Player) o;
+        return getPlayerNum() == player.getPlayerNum() && getCurrentScore() == player.getCurrentScore() && targetLoot == player.targetLoot && Double.compare(player.getPlayerStepInterval(), getPlayerStepInterval()) == 0 && Double.compare(player.lootStepInterval, lootStepInterval) == 0 && sideLength == player.sideLength && isFinished() == player.isFinished() && isApproachingExit() == player.isApproachingExit() && isLooting() == player.isLooting() && Double.compare(player.getMaxHealth(), getMaxHealth()) == 0 && Double.compare(player.getCurrentHealth(), getCurrentHealth()) == 0 && lost == player.lost && Objects.equals(getPlayerName(), player.getPlayerName()) && Objects.equals(playerSprite, player.playerSprite) && Objects.equals(getTargetNode(), player.getTargetNode()) && Objects.equals(roomCenter, player.roomCenter) && Objects.equals(getPlayerColor(), player.getPlayerColor()) && Objects.equals(pathKeys, player.pathKeys) && Objects.equals(nextRoomNodes, player.nextRoomNodes) && Objects.equals(getCurrentRoom(), player.getCurrentRoom()) && Objects.equals(getLootInProgress(), player.getLootInProgress());
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(playerNum, playerName, playerColor);
     }
 }
 

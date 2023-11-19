@@ -5,9 +5,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
-
+/**
+ * Inherits JPanel for the purpose of containing all the graphics-heavy operations outside of {@link GUI}
+ * @author Naomi Coakley
+ * */
 public class FloorPlan extends JPanel {
-
     public static final int rooms = 10;
     private static Double hWidth;
     private static Double hOffset;
@@ -22,14 +24,16 @@ public class FloorPlan extends JPanel {
     private Deque<String> playerKeys;
     private Rectangle2D[] hallSprites;
     private List<Ellipse2D> bloodSprites;
-    private static final Color bloodRed = new Color(148, 29, 29, 195);
+    private static final Color bloodRed = new Color(168, 24, 24, 148);
     private boolean simulating;
-
+    /**
+     * Default zero-args constructor
+     * */
     public FloorPlan(){
         super(null, true);
         hWidth = 48*GUI.scale;
         hOffset = 128*GUI.scale;
-        setHall(new Dimension((int)(.48*GUI.h), (int)(.36*GUI.h)));
+        setHall(new Dimension((int)(.48*(Math.min(GUI.w, GUI.h))), (int)(.36*(Math.min(GUI.w, GUI.h)))));
         this.setBackground(GUI.intelliJGray);
         this.ready = false;
         this.roomKeys = new LinkedList<>();
@@ -38,24 +42,33 @@ public class FloorPlan extends JPanel {
         this.simulating = false;
         this.trapCount = 0;
     }
+    /**
+     * Calls individual methods to arrange co-dependent categories of graphical elements and place them on-screen.
+     * */
     public void buildLevel(){
         arrangeHallways();
         arrangeRooms();
         setReady(true);
     }
+    /**
+     * Generates Rooms of varying sizes and fits them into hard-coded positions relative to the hallways.
+     * */
     public void arrangeRooms(){
         //create rooms
         Random rand = new Random();
         for(int i = 0; i < rooms; i++) {
             Room room = new Room((int) roomPositions[i].getX(),(int) roomPositions[i].getY(),
-                    (int) ((256-rand.nextInt(64))*GUI.scale), (int) ((200-rand.nextInt(64))* GUI.scale), i, true);
+                    (int) ((256-rand.nextInt(64))*GUI.scale), (int) ((200-rand.nextInt(64))* GUI.scale), i);
             room.generateLoot();
             String key = "Room " + i;
             HashGame.entities.put(key, (Room) room);
             roomKeys.add(key);
-            //System.out.println(key + ": " + room.getRoomSize().width +"x"+ room.getRoomSize().height);
         }
     }
+    /**
+     * Generates Rectangles of uniform sizes representing hallways and fits them into hard-coded positions relative to
+     * the user's screen resolution.
+     * */
     public void arrangeHallways(){
         hallSprites = new Rectangle2D.Double[]{
             // N main circuit
@@ -99,6 +112,10 @@ public class FloorPlan extends JPanel {
     public static Dimension getHall() {
         return hall;
     }
+    /**
+     * A necessary evil. Almost every class depends on public access to these nodes.
+     * @param hall dimension of the hall as defined relative to the screen resolution
+     * */
     public static void setHall(Dimension hall) {
         FloorPlan.hall = hall;
         if(GUI.screenSize != null){
@@ -171,11 +188,16 @@ public class FloorPlan extends JPanel {
             }*/
         }
     }
-    public void addBloodSprites(double x, double y){
+    /**
+     * Leaves a yucky little blood splatter in a Player's place when it dies due to its health dropping below zero.
+     * @param x x-coordinate of the unfortunately expired Player's site of demise
+     * @param y y-coordinate of the woefully deceased Player's final resting place
+     * */
+    public void killPlayer(double x, double y){
         x -= 16*GUI.scale;
         y -= 16*GUI.scale;
-        for(int i = 0; i < 64; i++){
-            bloodSprites.add(new Ellipse2D.Double(x+(Math.random()*(56*GUI.scale)), y+(Math.random()*(56*GUI.scale)), (2+(Math.random()*6))*GUI.scale, (2+(Math.random()*6))*GUI.scale));
+        for(int i = 0; i < 96; i++){
+            bloodSprites.add(new Ellipse2D.Double(x+(Math.random()*(56*GUI.scale)), y+(Math.random()*(56*GUI.scale)), (2+(Math.random()*9))*GUI.scale, (2+(Math.random()*9))*GUI.scale));
         }
     }
     public Deque<String> getPlayerKeys() {
@@ -196,6 +218,9 @@ public class FloorPlan extends JPanel {
     public void setSimulating(boolean simulating) {
         this.simulating = simulating;
     }
+    /**
+     *
+     * */
     @Override
     public void paintComponent(Graphics g){
         Graphics2D gx = (Graphics2D) g;

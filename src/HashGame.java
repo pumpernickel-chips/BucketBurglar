@@ -6,13 +6,17 @@ import java.util.*;
 import java.util.List;
 import javax.swing.Timer;
 /**
+ * This is a game about stealing treasures from a mysterious network of hallways and rooms. Players are lucky to escape
+ * alive, since many of the treasures are booby-trapped at random. Living escapees will leave this trial wealthier than
+ * before. Implements ActionListener since this class manages all phases of the game, so all button-presses trigger
+ * events that are meant to be controlled by this class' methods.
  * @author Naomi Coakley
+ * @author John Beaudry
+ * @author Yuliia Synytska
  */
 public class HashGame implements ActionListener {
     private String gameName;
     private int width, height;
-    public static final int STAY = 0, NORTH = 1, EAST = 2, SOUTH = 3, WEST = 4, N_EAST = 5, N_WEST = 6, S_EAST = 7, S_WEST = 8;
-    public static final int[] DIRECTIONS = new int[]{0, 1 ,2 , 3, 4, 5, 6, 7, 8};
     private String playerKeys[];
     private boolean inGame;
     private GUI window;
@@ -21,7 +25,6 @@ public class HashGame implements ActionListener {
     private Timer sim;
     private int elapsedMs, frameTimeMs, fps;
 
-    //private Iterator<Map.Entry<Integer, GameEntity>> iterEnt;
     public HashGame(){
         this("Untitled");
     }
@@ -35,6 +38,10 @@ public class HashGame implements ActionListener {
             String gameName = "Untitled Game About Stealing Treasure";
             HashGame test = new HashGame(gameName);
     }
+    /**
+     * Begins the phase of the game that allows the user to select the number of {@code Players} entering the game. Is
+     * initially called by the constructor but can also be called by
+     * */
     public void selectPlayers(){
         entities = new EntityTable();
         inGame = false;
@@ -72,16 +79,23 @@ public class HashGame implements ActionListener {
     public void createPlayers(){
         this.playerKeys = new String[window.getNumPlayersJoined()];
         for (int i = 0; i < window.getNumPlayersJoined(); i++) {
-            Player p = new Player("Player " + (i+1), 100);
-            playerKeys[i] = p.getName();
+            Player p = new Player((i+1), 100);
+            playerKeys[i] = p.getPlayerName();
             p.setPlayerColor(GUI.playerColors[i]);
-            entities.put(p.getName(), p);
+            entities.put(p.getPlayerName(), p);
         }
     }
+    /**
+     * Called by {@code simulate()} to either move a single {@code Player} sprite by a small interval (which increments
+     * slightly with each method call to simulate acceleration), or to collect loot while the {@code isLooting()}
+     * condition is satisfied. This resets to 0 after the Player stops to collect loot.
+     * @param p the {@code Player} being made to perform actions
+     * @return whether the {@code Player} is still alive or not
+     * */
     public boolean playerAction(Player p){
         if(!p.isLooting()){
             double interval = p.getPlayerStepInterval();
-            p.setPlayerStepInterval(interval + (interval < 12? .25 : 0));
+            p.setPlayerStepInterval(interval + (interval < (p.isApproachingExit()? 16 : 8)? .33 : 0));
             if (p.moveSprite(p.getPlayerStepInterval())) {
                 if(!p.isFinished()){
                     p.setTargetNode();
@@ -95,11 +109,18 @@ public class HashGame implements ActionListener {
         }
         return p.hasLost();
     }
+    /**
+     * Initializes {@link FloorPlan}, calls a method to build the level, and calls a {@link GUI} method to show gameplay.
+     * */
     public void initializeLevel(){
         this.level = new FloorPlan();
         level.buildLevel();
         window.showGameSession(level);
     }
+    /**
+     * Initializes {@code level, fps, elapsedMs, and frameTimeMs} and starts a simulation timer following a lambda that
+     * updates the gameplay frame-by-frame until the game ends and the timer can start.
+     * */
     public void simulate(){
         level.repaint();
         fps = 60;
@@ -115,15 +136,13 @@ public class HashGame implements ActionListener {
             }
             inGame = playerKeys.length > 0;
             if (inGame) {
-                int playersMoving = 0;
                 for (String k : playerKeys) {
                     Player p;
-                    playersMoving++;
-                    if ((entities.get(k) != null) && (playersMoving <= (1 + ((elapsedMs / fps)*playersMoving)) )) {
+                    if (entities.get(k) != null) {
                         p = (Player) entities.get(k);
-                        if (playerAction(p)){
-                            level.addBloodSprites(p.getSprite().getX(), p.getSprite().getY());
-                            entities.remove(p.getName());
+                        if (playerAction(p)) {
+                            level.killPlayer(p.getSprite().getX(), p.getSprite().getY());
+                            entities.remove(p.getPlayerName());
                         }
                     }
                 }
@@ -135,6 +154,10 @@ public class HashGame implements ActionListener {
         });
         sim.start();
     }
+    /**
+     * Creates JButtons and gives them actionListeners
+     * @return an ArrayList of JButtons
+     * */
     public List<JButton> initializeInputs(){
         JButton addP1 = new JButton(), addP2 = new JButton(), addP3 = new JButton(), addP4 = new JButton(),
                 start = new JButton(), newGame = new JButton(), quit = new JButton();

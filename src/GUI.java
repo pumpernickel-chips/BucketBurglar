@@ -6,11 +6,19 @@ import java.util.Deque;
 import java.util.List;
 
 /**
+ * Extends JFrame to act as the top-level container for the game's graphical user interface. Has several public static
+ * attributes that govern various numerical values throughout the program to allow for certain flexible traits, such as
+ * the ability to scale the graphics to any screen resolution.
  * @author Naomi Coakley
  */
 public class GUI extends JFrame{
     public static Dimension screenSize;
     public static int w, h;
+    /**
+     * The graphics in this class as well as FloorPlan were originally scaled for a 1440p monitor. 0.00069 ≈ 1/1440 and
+     * thus, multiplying a users' monitor height (or width if in portrait orientation) by this value outputs a factor
+     * by which the GUI can scale various graphical elements to make proper use of space regardless of screen size.
+     * */
     public static Double scale;
     public static Point2D windowOrigin;
     private String name;
@@ -32,7 +40,7 @@ public class GUI extends JFrame{
      * */
     public GUI() {this("Game Title Here", 800, 600);}
     /**
-     * Complete constructor
+     * Parameterized constructor
      * @param title title of game
      * */
     public GUI(String title, int width, int height){
@@ -43,9 +51,8 @@ public class GUI extends JFrame{
         w = width;
         h = height;
         screenSize = new Dimension(w, h);
-        scale = h*.00069;//graphics were originally scaled for a 1440p monitor, thus .00069 ≈ 1/1440 and multiplying users' monitor height by it outputs a factor by which to scale various dimensions by accurately regardless of screen size.
-        buttonFont = new Font("Hevetica", Font.BOLD, ((int) (20*scale)));
-        //System.out.println(screenSize);
+        scale = (Math.min(h,w))*.00069;
+        buttonFont = new Font("Hevetica", Font.BOLD, ((int) (20*(scale))));
         windowOrigin = new Point2D.Double(w*.5,h*.5);
 
         main = new JPanel(new GridBagLayout(), true);
@@ -58,6 +65,9 @@ public class GUI extends JFrame{
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
+    /**
+     * Calls individual methods to initialize 3 JPanels and arrange them on-screen.
+     * */
     public void showMainMenu(){
         title = showTitleBanner();
         select = showPlayerSelection();
@@ -81,6 +91,10 @@ public class GUI extends JFrame{
         main.add(menu, mC);
         revalidate();
     }
+    /**
+     * Links buttons that have actionListeners in HashGame so that they can be rendered in this class while having their
+     * core functionality governed elsewhere.
+     * */
     public void linkInputs(List<JButton> inputs){
         joinButtons = new JButton[4];
         menuControls = new JButton[3];
@@ -110,6 +124,10 @@ public class GUI extends JFrame{
             }
         }
     }
+    /**
+     * Arranges the title banner
+     * @return a JPanel with large title text
+     * */
     public JPanel showTitleBanner(){
         JPanel tB = new JPanel(true);
         tB.setBackground(intelliJGray);
@@ -122,21 +140,25 @@ public class GUI extends JFrame{
 
         return tB;
     }
+    /**
+     * Arranges the player selection buttons
+     * @return a JPanel with join buttons for all 4 players
+     * */
     public JPanel showPlayerSelection(){
         JPanel pS = new JPanel(true);
         pS.setBackground(intelliJGray);
         pS.setLayout(new GridBagLayout());
         GridBagConstraints pC = new GridBagConstraints();
         //constraints applying to all joinButtons
-        pC.weighty = 0.5;
+        pC.weighty = 0.4;
         pC.weightx = 0.5;
         pC.gridx = 0;
         pC.gridy = 0;
-        pC.ipadx = 10;
-        pC.ipady = 10;
-        pC.anchor = GridBagConstraints.NORTH;
+        pC.ipadx = 24;
+        pC.ipady = 24;
+        pC.anchor = GridBagConstraints.WEST;
         pC.fill = GridBagConstraints.NONE;
-        pC.insets = new Insets (5,5,5,5);
+        pC.insets = new Insets ((int) (h*.1),(int) (w*.25),5,5);
         int playerNum = 0;
         this.playerJoined = new boolean[]{false, false, false, false};
         for(JButton b : joinButtons){
@@ -148,12 +170,21 @@ public class GUI extends JFrame{
             b.setBorder(BorderFactory.createLineBorder((playerNum == 1? playerColors[playerNum - 1] : Color.LIGHT_GRAY), 4, false));
             b.setFont(buttonFont);
             //add every 2 columns starting at 1
-            pC.gridx += (playerNum == 1? 1 : 2);
+            pC.gridy += (playerNum == 1? 1 : 2);
             pS.add(b, pC);
+            pC.insets = new Insets (5,(int) (w*.25),5,5);
         }
+        pC.weighty = 1;
+        pC.gridy++;
+        pS.add(Box.createVerticalStrut(0), pC);
         return pS;
     }
-    public JPanel showNavigationBar(boolean inGame){
+    /**
+     * Arranges the navigation bar
+     * @param playingGame determines whether the button on the left is the "START" or "NEW GAME" button.
+     * @return a JPanel with 2 navigation buttons, the right-side button always being "QUIT"
+     * */
+    public JPanel showNavigationBar(boolean playingGame){
         JPanel nB = new JPanel(true);
         nB.setBackground(intelliJGray);
         nB.setLayout(new GridBagLayout());
@@ -170,7 +201,7 @@ public class GUI extends JFrame{
         nC.weightx = 1;
         nB.add(Box.createHorizontalStrut(0), nC);
         for(JButton b : menuControls){
-            if(!inGame && !b.getActionCommand().equals("new game") || inGame && !b.getActionCommand().equals("start")) {
+            if(!playingGame && !b.getActionCommand().equals("new game") || playingGame && !b.getActionCommand().equals("start")) {
                 b.setText(b.getActionCommand().toUpperCase());
                 b.setBackground(Color.DARK_GRAY);
                 b.setForeground(Color.LIGHT_GRAY);
@@ -193,6 +224,10 @@ public class GUI extends JFrame{
         nB.add(Box.createHorizontalStrut(0), nC);
         return nB;
     }
+    /**
+     * Arranges the game session view
+     * @return a JPanel with a whole game on it
+     * */
     public void showGameSession(FloorPlan gameMap){
         this.inGame = true;
         this.level = gameMap;
@@ -220,6 +255,9 @@ public class GUI extends JFrame{
         this.setContentPane(game);
         this.revalidate();
     }
+    /**
+     * Updates the {@code scoreboard} when called by HashGame after each frame of gameplay.
+     * */
     public void updateScoreboard(int totalTimeElapsed, String[] playerKeys){
         if(totalTimeElapsed < 30 && level.isSimulating()){
             GridBagConstraints sbC = new GridBagConstraints(0, 0, 1, 1, 0.5, 0.125,
@@ -233,14 +271,14 @@ public class GUI extends JFrame{
             healthVals = new double[maxPlayers];
             for(int i = 0; i < maxPlayers; i++){
                 Player p = i < playerKeys.length? (Player) HashGame.entities.get(playerKeys[i]) : null;
-                scores[i] = new JLabel(p != null? p.getName().toUpperCase() + ": ----" : "PLAYER NOT JOINED", SwingConstants.LEADING);
+                scores[i] = new JLabel(p != null? p.getPlayerName().toUpperCase() + ": ----" : "PLAYER NOT JOINED", SwingConstants.LEADING);
                 scores[i].setForeground(p != null? p.getPlayerColor() : new Color(43, 43, 44, 0));
-                scores[i].setFont(buttonFont.deriveFont(buttonFont.getSize()*1.8f));
+                scores[i].setFont(buttonFont.deriveFont((float) (buttonFont.getSize()*(1.8f*scale))));
                 scoreboard.add(scores[i], sbC);
                 sbC.gridy++;
-                healths[i] = new JLabel(p != null? "HEALTH: " + healthVals[i] + "%" : "PLAYER " + i + " IS DEAD", SwingConstants.LEADING);
+                healths[i] = new JLabel(p != null? "HEALTH: " + healthVals[i] + "%" : "PLAYER " + (i+1) + " WAS KILLED BY A TRAP", SwingConstants.LEADING);
                 healths[i].setForeground(p != null? p.getPlayerColor() : new Color(43, 43, 44, 0));
-                healths[i].setFont(buttonFont.deriveFont(buttonFont.getSize()*1.2f));
+                healths[i].setFont(buttonFont.deriveFont((float) (buttonFont.getSize()*(1.2f*scale))));
                 scoreboard.add(healths[i], sbC);
                 sbC.gridy++;
             }
@@ -250,21 +288,21 @@ public class GUI extends JFrame{
             Player p = i < playerKeys.length ? (Player) HashGame.entities.get(playerKeys[i]) : null;
             if(p != null){
                 if(scoreVals[i] < p.getCurrentScore()) {
-                    scoreVals[i] += 11;
+                    scoreVals[i] += 66;
                     if(scoreVals[i] > p.getCurrentScore()) scoreVals[i] = p.getCurrentScore();
                 }
                 if(healthVals[i] > p.getCurrentHealth()) {
                     healthVals[i] -= 3;
                     if(healthVals[i] < p.getCurrentHealth()) healthVals[i] = p.getCurrentHealth();
                 }
-                scores[i].setText(p.getName().toUpperCase() + ": " + (scoreVals[i] > 0? "$" + scoreVals[i] : "- - - -"));
+                scores[i].setText(p.getPlayerName().toUpperCase() + ": " + (scoreVals[i] > 0? "$" + scoreVals[i] : "- - - -"));
                 healths[i].setText("HEALTH: " + ((int) (p.getCurrentHealth())) + "%");
                 if(p.getCurrentHealth() < (p.getMaxHealth()*.3)) healths[i].setForeground(Color.RED);
                 if(!p.isFinished()) inGame = true;
-            }else if(!scores[i].getText().equals("PLAYER NOT JOINED") && !healths[i].getText().equals("PLAYER " + i + " IS DEAD")){
+            }else if(!scores[i].getText().equals("PLAYER NOT JOINED") && !healths[i].getText().equals("PLAYER " + (i+1) + " WAS KILLED BY A TRAP")){
                 scoreVals[i] *= .5;
                 healths[i].setForeground(Color.RED);
-                healths[i].setText("PLAYER " + (i+1) + " WAS KILLED BY TRAPS");
+                healths[i].setText("PLAYER " + (i+1) + " WAS KILLED BY A TRAP");
             }
         }
         if(!inGame){
@@ -277,18 +315,18 @@ public class GUI extends JFrame{
                     if(bestScore == p.getCurrentScore()) ranking.push(i);
                 }
             }
-            int winnerIndex = ranking.poll();
+            int winnerIndex = ranking.peek() != null? ranking.poll() : 0;
             for(int i = 0; i < maxPlayers; i++) {
                 Player p = i < playerKeys.length ? (Player) HashGame.entities.get(playerKeys[i]) : null;
                 if (p != null && i == winnerIndex) {
-                    scores[i].setText(p.getName().toUpperCase() + " IS THE WINNER! ");
+                    scores[i].setText(p.getPlayerName().toUpperCase() + " IS THE WINNER! ");
                     healths[i].setText("ESCAPED WITH $" + scoreVals[i] + " IN TREASURE");
                     healths[i].setForeground(p.getPlayerColor());
                 }else{
                     scores[i].setForeground(new Color(43, 43, 44, 0));
                     if(p != null){
                         healths[i].setForeground(p.getPlayerColor());
-                        healths[i].setText(p.getName().toUpperCase() + " ESCAPED WITH $" + scoreVals[i] + " IN TREASURE");
+                        healths[i].setText(p.getPlayerName().toUpperCase() + " ESCAPED WITH $" + scoreVals[i] + " IN TREASURE");
                     }
                 }
             }
@@ -296,6 +334,10 @@ public class GUI extends JFrame{
         revalidate();
         repaint();
     }
+    /**
+     * Called once per every frame of gameplay to force all GameEntities to update and the GUI to render said updates.
+     * @param playerKeys a list of keys of players joined. Can contain null values if one or more players have perished.
+     * */
     public void advanceFrame(String[] playerKeys){
         Deque<String> keys = new ArrayDeque<String>();
         for(String key : playerKeys) if ((Player)(HashGame.entities.get(key)) != null) keys.push(key);
@@ -313,6 +355,13 @@ public class GUI extends JFrame{
     public boolean isPlayerJoined(int playerNum) {
         return playerNum <= 4 && playerNum > 0 && this.playerJoined[playerNum - 1];
     }
+    /**
+     * The purpose of this method is to use colors to indicate what players are available to join. Players can only join
+     * in order and leave in reverse order (ex: Player 2 can't join until Player 1 has joined, and Player 1 can't leave
+     * until Player 2 has left)
+     * @param joined true if the player is attempting to join the game, false if leaving
+     * @param playerNum the playerNum of the player joining or leaving
+     * */
     public void updateJoinButtons(boolean joined, int playerNum) {
         this.playerJoined[playerNum-1] = joined;
         joinButtons[playerNum - 1].setBackground(joined? playerColors[playerNum - 1] : Color.LIGHT_GRAY);
